@@ -193,7 +193,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <canvas class="portrait" data-pose="worried"></canvas>
       <h1>Oh nein!</h1>
       <p>Ocean braucht eine kleine Pause. Versuch es gleich nochmal!</p>
-      <div class="tip"><b>Wusstest du?</b><span id="failFact"></span></div>
+      <div class="tip"><b>Baderegel</b><span id="failFact"></span></div>
       <div class="btns">
         <button class="play" id="btnRetry2">Nochmal</button>
         <button class="play alt" data-menu>Zum Menü</button>
@@ -465,10 +465,8 @@ function levelDone(){
   $('doneTitle').textContent = last ? 'Ocean ist zu Hause!' : 'Level geschafft!';
   $('doneStars').innerHTML = [0,1,2].map(i => `<span class="${i<n?'':'off'}">★</span>`).join('');
   $('doneScore').textContent = S.score + ' Punkte';
-  // abwechselnd Baderegel und Meeres-Fakt
-  const k = save.tip++;
-  if (k % 2 === 0){ $('tipLabel').textContent='Baderegel'; $('tipText').textContent = RULES[(k/2) % RULES.length]; }
-  else { $('tipLabel').textContent='Wusstest du?'; $('tipText').textContent = FACTS[((k-1)/2) % FACTS.length]; }
+    const k = save.tip++;
+  $('tipLabel').textContent = 'Baderegel'; $('tipText').textContent = RULES[k % RULES.length];   // der Reihe nach alle Baderegeln
   persist();
   hsMine = null;
   const q = hsQualifies(S.lvl, S.score);
@@ -483,7 +481,7 @@ function levelDone(){
 }
 function levelFail(){
   S.mode='fail';
-  $('failFact').textContent = FACTS[Math.floor(Math.random()*FACTS.length)];
+  $('failFact').textContent = RULES[Math.floor(Math.random()*RULES.length)];
   show('fail'); beep(380,.5,'triangle',.14,.45);
 }
 
