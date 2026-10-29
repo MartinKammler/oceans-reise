@@ -16,13 +16,13 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 | Level | Besonderheit | Hindernisse |
 |---|---|---|
 | 1. Lagune | ruhig, zum Eingewöhnen | Felsen, Seeigel |
-| 2. Seegraswiese | viel Seegras und Krabben | Seeigel, Felsen, Tüte, Kugelfisch |
+| 2. Seegraswiese | offenes Meer mit Fischschwärmen, viel Seegras und Krabben | Seeigel, Felsen, Tüte, Kugelfisch |
 | 3. Korallenriff | etwas schneller | Seeigel, Felsen, Tüte, Kugelfisch |
-| 4. Strömung | Wasser zieht Ocean hoch und runter | Seeigel, Tüte, Flasche, Angelhaken, Kugelfisch |
+| 4. Strömung | Eiswelt, Wasser zieht Ocean hoch und runter | Seeigel, Tüte, Flasche, Angelhaken, Kugelfisch |
 | 5. Hafen | Kaimauer und Schiffsrumpf, viel Müll | Tüte, Flasche, Dose, Netz, Reifen, Eimer, Anker |
-| 6. Geisternetze | viele große, treibende Netze | Netze, Dose, Reifen, Anker |
+| 6. Geisternetze | altes Schiffswrack, viele große, treibende Netze | Netze, Dose, Reifen, Anker |
 | 7. Tiefsee | dunkel, viele Quallen, Schatz am Grund | Anglerfische, Seeigel, Felsen, Netz |
-| 8. Müllstrudel | Müllwände mit einer Lücke | Wände aus Tüten, Flaschen, Dosen, Anker |
+| 8. Müllstrudel | Steg im trüben Wasser, Müllwände mit einer Lücke | Wände aus Tüten, Flaschen, Dosen, Anker |
 | 9. Wilde See | Wellen, starke Strömung | fast alles, viele Angelhaken |
 | 10. Heimweg | Seegraswiese → Korallenbucht → Oceans Höhle, Müllwände | fast alles |
 
@@ -40,7 +40,7 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 
 - `index.html` – das komplette Spiel (HTML, CSS, JavaScript in einer Datei)
 - `img/` – aufbereitete Spielgrafiken (zugeschnitten, verkleinert, WebP/JPG)
-- `quellgrafiken/original/` – die Originalgrafiken in voller Größe
+- `quellgrafiken/original/` – die Originalgrafiken in voller Größe (breite 3:1-Hintergründe in `hintergruende/breit/`)
 - `quellgrafiken/rig.json` – Gelenkpunkte, mit denen Ocean aus Körper, Kopf und Flossen zusammengesetzt wird
 - `quellgrafiken/assets.json` – Größen der Spielgrafiken und Kachelhöhe von Ankerkette und Angelschnur (auch in `index.html` eingebettet)
 
