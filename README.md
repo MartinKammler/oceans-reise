@@ -34,7 +34,7 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 
 3 Leben pro Level. Wer sie verliert, startet nur das Level neu. 1 Stern fürs Schaffen, 2 und 3 Sterne je nach Punkten. Ein Level wird freigeschaltet, sobald das vorherige geschafft ist. Fortschritt wird im Browser gespeichert (localStorage, Schlüssel `ocean-save-v2`).
 
-In der Levelauswahl gibt es für Erwachsene zwei Halte-Knöpfe (2 Sekunden gedrückt halten): „Alle Level freischalten“ und „Von vorn beginnen“ (setzt Sterne und Freischaltung zurück, die Bestenliste bleibt).
+„Von vorne“ im Startmenü startet die Reise wieder bei Level 1; mit „Weiter“ nach jedem Level geht es durch alle zehn. Sterne und Bestenliste bleiben erhalten.
 
 **Bestenliste:** Jedes Level hat eine eigene Top 10. Wer nach einem geschafften Level genug Punkte hat, gibt seinen Namen ein (max. 12 Zeichen, der letzte Name wird vorgeschlagen). Die Listen sind im Startmenü und am Level-Ende über „Bestenliste“ erreichbar. Gespeichert wird nur auf dem jeweiligen Gerät (localStorage, `ocean-hs-v1` und `ocean-name`).
 
