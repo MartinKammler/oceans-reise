@@ -274,8 +274,8 @@ const LEVELS = [
    bads:['tuete','dose','reifen','eimer','anker','becher','kanister','plastik','sixpack'], stars:[30,60], intro:'Ganze Müllwände! Such die Lücke.'},
   {name:'Wilde See', sub:'schnell und wild', bg:'bg_wild', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.2, gap:1.35, fish:3, current:90,
    bads:['tuete','flasche','dose','netz','seeigel','fels','haken','haken','kugelfisch','becher','strohhalm','plastik'], stars:[35,65], intro:'Schnell und wild. Halt durch!'},
-  {name:'Heimweg', sub:'zurück zum Strand', bg:'bg_hell', floor:'boden_mix', gf:.66, top:'#8ae6e8', bot:'#0f4a6e', speed:1.2, gap:1.3, fish:4, wall:6,
-   bads:['tuete','flasche','dose','netz','seeigel','fels','reifen','anker','haken','kugelfisch','sixpack','kanister','becher','strohhalm'], stars:[35,70], beach:true, intro:'Fast geschafft! Bring Ocean nach Hause zum Strand.'}
+  {name:'Heimweg', sub:'zurück nach Hause', bg:'bg_heim1', floor:'boden_mix', gf:.66, top:'#8ae6e8', bot:'#0f4a6e', speed:1.2, gap:1.3, fish:4, wall:6,
+   bads:['tuete','flasche','dose','netz','seeigel','fels','reifen','anker','haken','kugelfisch','sixpack','kanister','becher','strohhalm'], stars:[35,70], home:['bg_heim1','bg_heim2','bg_heim3'], intro:'Fast geschafft! Bring Ocean nach Hause.'}
 ];
 const LEVEL_TIME = 60;
 
@@ -373,7 +373,7 @@ const L = () => LEVELS[S.lvl];
 const OR = () => 34*U;
 
 // Grafiken aus den Asset-Paketen
-const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch1": [200, 162], "fisch2": [200, 140], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497], "seepferd": [152, 256], "schatz": [256, 247], "kugelfisch": [256, 212], "angler": [256, 194], "krabbe": [256, 197], "qualle": [218, 256], "anker": [194, 419], "haken": [103, 420], "bg_tief": [1774, 887], "bg_wild": [1774, 887], "boden_tief": [1520, 492], "boden_hafen2": [1520, 490], "torpedo": [256, 109], "gurtretter": [256, 97], "m_dose1": [135, 220], "m_dose2": [138, 217], "m_dose3": [142, 220], "m_dose4": [137, 208], "m_dose5": [146, 220], "m_dose6": [153, 203], "m_dose7": [133, 220], "m_flasche1": [95, 220], "m_flasche2": [115, 220], "m_flasche3": [124, 220], "m_flasche4": [113, 220], "m_flasche5": [220, 104], "m_flasche6": [220, 111], "m_flasche7": [220, 132], "m_netz1": [220, 126], "m_becher1": [117, 220], "m_becher2": [125, 220], "m_becher3": [117, 220], "m_becher4": [220, 187], "m_strohhalm1": [178, 200], "m_strohhalm2": [118, 220], "m_sixpack1": [220, 165], "m_kanister1": [183, 220], "m_kanister2": [141, 220], "m_kanister3": [163, 220], "m_kanister4": [174, 220], "m_plastik1": [218, 176], "m_plastik2": [220, 180], "m_plastik3": [220, 187], "m_tuete1": [204, 240], "m_tuete2": [214, 240], "m_tuete3": [220, 240], "m_tuete4": [237, 240], "m_tuete5": [228, 240]};
+const ASSETS = {"bg_heim1": [1774, 887], "bg_heim2": [1774, 887], "bg_heim3": [1774, 887], "tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch1": [200, 162], "fisch2": [200, 140], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "seepferd": [152, 256], "schatz": [256, 247], "kugelfisch": [256, 212], "angler": [256, 194], "krabbe": [256, 197], "qualle": [218, 256], "anker": [194, 419], "haken": [103, 420], "bg_tief": [1774, 887], "bg_wild": [1774, 887], "boden_tief": [1520, 492], "boden_hafen2": [1520, 490], "torpedo": [256, 109], "gurtretter": [256, 97], "m_dose1": [135, 220], "m_dose2": [138, 217], "m_dose3": [142, 220], "m_dose4": [137, 208], "m_dose5": [146, 220], "m_dose6": [153, 203], "m_dose7": [133, 220], "m_flasche1": [95, 220], "m_flasche2": [115, 220], "m_flasche3": [124, 220], "m_flasche4": [113, 220], "m_flasche5": [220, 104], "m_flasche6": [220, 111], "m_flasche7": [220, 132], "m_netz1": [220, 126], "m_becher1": [117, 220], "m_becher2": [125, 220], "m_becher3": [117, 220], "m_becher4": [220, 187], "m_strohhalm1": [178, 200], "m_strohhalm2": [118, 220], "m_sixpack1": [220, 165], "m_kanister1": [183, 220], "m_kanister2": [141, 220], "m_kanister3": [163, 220], "m_kanister4": [174, 220], "m_plastik1": [218, 176], "m_plastik2": [220, 180], "m_plastik3": [220, 187], "m_tuete1": [204, 240], "m_tuete2": [214, 240], "m_tuete3": [220, 240], "m_tuete4": [237, 240], "m_tuete5": [228, 240]};
 const TILE = {"anker": 51, "haken": 10};
 const SPR = {};
 for (const k in ASSETS){ const im = new Image(); im.src = 'img/' + k + (k.startsWith('bg_') ? '.jpg' : '.webp'); SPR[k] = im; }
@@ -399,7 +399,7 @@ function startLevel(i){
   S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
   setFace('determined',1.5);
   ocean.x=ocean.tx=W*.22; ocean.y=ocean.ty=H*.5;
-  S.fish=[]; S.fishT=1; S.scroll=0; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
+  S.fish=[]; S.fishT=1; S.scroll=0; S.homeMsg=false; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
   S.mode='play'; show(null); beep(520,.15,'triangle',.14,1.6);
 }
 function updHud(){
@@ -617,6 +617,7 @@ function update(dt){
   const ending = S.t > LEVEL_TIME - 4;   // kurz vor Schluss keine neuen Hindernisse
   S.spawnT-=dt; S.goodT-=dt;
   if (lv.wall){ S.wallT-=dt; if (S.wallT<=0 && !ending){ spawnWall(); S.wallT=lv.wall; S.spawnT=Math.max(S.spawnT,1.1); } }
+  if (lv.home && !S.homeMsg && S.t > LEVEL_TIME-7){ S.homeMsg=true; S.banner={txt:'Da vorne ist Oceans Zuhause!', t:3.5}; }
   if (S.banner){ S.banner.t-=dt; if (S.banner.t<=0) S.banner=null; }
   if (S.spawnT<=0 && !ending){ spawnBad(); S.spawnT = lv.gap*(.7+Math.random()*.6) * (1 - Math.min(.25,S.t/240)); }
   if (S.goodT<=0 && S.t < LEVEL_TIME-2){ spawnGood(); S.goodT=.7+Math.random()*.8; }
@@ -673,11 +674,23 @@ function tile(name, offset, y, h){
   }
   return true;
 }
+function cover(name, pan){
+  if (!ok(name)) return;
+  const im=SPR[name], sc=Math.max(W/im.naturalWidth, H/im.naturalHeight)*1.06, w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+  ctx.drawImage(im, -(w-W)*pan, (H-h)*.6, w, h);
+}
 function drawBg(){
   const lv = S.mode==='menu' ? LEVELS[0] : L();
   const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,lv.top); g.addColorStop(1,lv.bot);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  tile(lv.bg, S.scroll*.18, 0, Math.max(H, W*.5));
+  const bh = Math.max(H, W*.5);
+  if (lv.home && S.mode!=='menu'){
+    // Seegraswiese -> Korallenbucht -> Höhle; Überblenden jeweils im letzten Drittel eines Abschnitts
+    // Bilder werden ganz gezeigt (kein Kacheln) und langsam von links nach rechts abgefahren
+    const ph = Math.min(1, S.t/LEVEL_TIME) * 2.5, i = Math.min(2, Math.floor(ph)), f = Math.min(1, ph - i);
+    cover(lv.home[i], i < 2 ? f : Math.min(1, (ph-2)*2));
+    if (i < 2 && f > .65){ ctx.globalAlpha = Math.min(1,(f-.65)/.35); cover(lv.home[i+1], 0); ctx.globalAlpha = 1; }
+  } else tile(lv.bg, S.scroll*.18, 0, bh);
   ctx.fillStyle = lv.dark ? 'rgba(0,10,30,.12)' : 'rgba(40,120,170,.16)'; ctx.fillRect(0,0,W,H);   // Dunst: Hintergrund tritt zurück
   // Luftblasen
   const now=performance.now()/1000;
@@ -703,11 +716,6 @@ function drawBg(){
 function drawFloor(){
   const lv = S.mode==='menu' ? LEVELS[0] : L(), fh=floorH();
   if (!tile(lv.floor, S.scroll, H-fh, fh)){ ctx.fillStyle='#e0bd6e'; ctx.fillRect(0,H-fh*.3,W,fh*.3); }
-  // Strand am Ende von Level 4
-  if (S.mode!=='menu' && lv.beach && S.t > LEVEL_TIME-9 && ok('strand')){
-    const p=Math.min(1,(S.t-(LEVEL_TIME-9))/8), im=SPR.strand, h=H*.6, w=h*im.naturalWidth/im.naturalHeight;
-    ctx.drawImage(im, W - p*Math.max(w*.9, W), H-h, w, h);
-  }
 }
 function drawObj(o){
   if (!ok(o.img)) return;

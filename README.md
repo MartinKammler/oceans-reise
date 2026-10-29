@@ -24,7 +24,7 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 | 7. Tiefsee | dunkel, viele Quallen, Schatz am Grund | Anglerfische, Seeigel, Felsen, Netz |
 | 8. Müllstrudel | Müllwände mit einer Lücke | Wände aus Tüten, Flaschen, Dosen, Anker |
 | 9. Wilde See | Wellen, starke Strömung | fast alles, viele Angelhaken |
-| 10. Heimweg | Müllwände, am Ende kommt der Strand | fast alles |
+| 10. Heimweg | Seegraswiese → Korallenbucht → Oceans Höhle, Müllwände | fast alles |
 
 **Goodies:** Seegras +1, Qualle +2, Krabbe +2, Muschel +3, Seepferdchen +4 (sagt Hallo und schwimmt weiter), Seestern +5, Schatztruhe +10, Herz (Leben zurück), Rettungsgeräte (Rettungsring, Rettungsboje, Gurtretter: 5 Sekunden Schutzschild, der Name wird beim Einsammeln angezeigt)
 
@@ -51,6 +51,8 @@ Ocean besteht aus Einzelteilen (Körper, vier Köpfe, vordere und hintere Flosse
 ### Endlos-Hintergrund
 
 Hintergrund und Meeresboden werden gekachelt, jede zweite Kachel gespiegelt – dadurch passen die Ränder immer zusammen. Der Hintergrund zieht langsamer vorbei als der Boden (Parallaxe).
+
+Ausnahme Heimweg: Die drei Heimweg-Bilder werden nicht gekachelt, sondern jeweils ganz gezeigt, langsam abgefahren und ineinander überblendet (Seegraswiese, Korallenbucht, Höhle als Ziel).
 
 ## Hinweise
 
