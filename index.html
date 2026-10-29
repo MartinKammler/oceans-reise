@@ -66,8 +66,14 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
   display:flex;flex-direction:column;align-items:center;gap:2px}
 .lvl strong{font-size:16px;line-height:1.1;text-wrap:balance}
 .lvl small{font-size:13px;opacity:.7}
-.lvl .s{font-size:22px;color:#e0a800;letter-spacing:2px}
+.lvl .s{margin-top:auto;font-size:22px;color:#e0a800;letter-spacing:2px}
 .lvl:disabled{opacity:.5;cursor:default}
+.adult{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;border-top:2px dashed #bfe3ea;padding-top:10px}
+.adult .hint{width:100%;font-size:13px;opacity:.7}
+.hold{font:inherit;font-weight:700;font-size:15px;color:var(--sea);background:#e3f4f7;border:2px solid #bfe3ea;border-radius:999px;padding:6px 16px;cursor:pointer;
+  position:relative;overflow:hidden;touch-action:none}
+.hold i{position:absolute;inset:0 auto 0 0;width:0;background:rgba(31,143,176,.25)}
+.hold span{position:relative}
 .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
 .rules li{background:#e3f4f7;border-radius:14px;padding:8px 12px;font-size:17px;line-height:1.35;font-weight:600;display:flex;gap:10px}
 .rules li::before{content:"";flex:0 0 14px;height:14px;margin-top:5px;border-radius:50%;border:4px solid var(--ring);background:var(--paper)}
@@ -143,6 +149,11 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <h1>Wohin schwimmt Ocean?</h1>
       <div class="levels" id="levelGrid"></div>
       <button class="play alt" data-back>Zurück</button>
+      <div class="adult">
+        <span class="hint">Für Erwachsene: Knopf 2 Sekunden gedrückt halten</span>
+        <button class="hold" id="holdUnlock"><i></i><span>Alle Level freischalten</span></button>
+        <button class="hold" id="holdReset"><i></i><span>Von vorn beginnen</span></button>
+      </div>
     </div>
   </div>
 
@@ -284,7 +295,7 @@ let save = {stars:[], tip:0};
 try { const s = JSON.parse(localStorage.getItem('ocean-save-v2')); if (s && s.stars) save = s; } catch(e){}
 while (save.stars.length < LEVELS.length) save.stars.push(0);
 const persist = () => { try { localStorage.setItem('ocean-save-v2', JSON.stringify(save)); } catch(e){} };
-const unlocked = i => i === 0 || save.stars[i-1] > 0;
+const unlocked = i => i === 0 || save.all || save.stars[i-1] > 0;
 
 // ---------- Größe ----------
 let W=0,H=0,DPR=1,U=1;
@@ -502,6 +513,19 @@ function resume(){ S.mode='play'; show(null); }
 document.addEventListener('visibilitychange', () => { if (document.hidden && S.mode==='play') pause(); });
 
 $('rulesList').innerHTML = RULES.map(r => `<li>${r}</li>`).join('');
+// Halte-Knöpfe: lösen erst nach 2 s Drücken aus, damit Kinder sie nicht aus Versehen erwischen
+function holdButton(btn, action){
+  let t0=0, raf=0; const bar=btn.querySelector('i');
+  const stop=()=>{ cancelAnimationFrame(raf); t0=0; bar.style.width='0'; };
+  const tick=()=>{ const p=Math.min(1,(performance.now()-t0)/2000); bar.style.width=(p*100)+'%';
+    if (p>=1){ stop(); action(); beep(660,.12,'triangle',.14,1.3); } else raf=requestAnimationFrame(tick); };
+  btn.addEventListener('pointerdown', e=>{ e.preventDefault(); t0=performance.now(); raf=requestAnimationFrame(tick); });
+  for (const ev of ['pointerup','pointerleave','pointercancel']) btn.addEventListener(ev, stop);
+  btn.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && !t0){ e.preventDefault(); t0=performance.now(); raf=requestAnimationFrame(tick); } });
+  btn.addEventListener('keyup', stop);
+}
+holdButton($('holdUnlock'), ()=>{ save.all=true; persist(); buildLevelGrid(); });
+holdButton($('holdReset'), ()=>{ save.stars=LEVELS.map(()=>0); save.tip=0; save.all=false; persist(); buildLevelGrid(); });
 function buildLevelGrid(){
   $('levelGrid').innerHTML = LEVELS.map((l,i) => {
     const s = save.stars[i];
