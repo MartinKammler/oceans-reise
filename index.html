@@ -75,6 +75,26 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .legend{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;width:100%;font-size:15px;font-weight:700;text-align:left}
 .legend .bad{color:#b4322c}
 .small{font-size:15px !important;opacity:.75}
+.card.entry .portrait{display:none}
+.hs-entry{width:100%;background:#fff6d6;border:2px solid #f1dc94;border-radius:18px;padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.hs-entry b{font-size:18px;color:#a87a00}
+.hs-row{display:flex;gap:8px}
+.hs-row input{flex:1;min-width:0;font:inherit;font-weight:700;font-size:20px;color:var(--ink);background:#fff;border:3px solid #bfe3ea;border-radius:14px;padding:4px 12px;
+  user-select:text;-webkit-user-select:text}
+.hs-row input:focus{outline:none;border-color:var(--sea)}
+.hs-row .play{padding:6px 18px}
+.hs-nav{display:flex;align-items:center;gap:10px;width:100%;justify-content:space-between}
+.hs-nav strong{font-size:20px;text-align:center;flex:1}
+.hs-nav button{font:inherit;font-weight:800;font-size:22px;width:44px;height:44px;border-radius:50%;border:none;background:#e3f4f7;color:var(--sea);cursor:pointer}
+.hs-nav button:disabled{opacity:.35;cursor:default}
+.hs-list{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:4px}
+.hs-list li{display:grid;grid-template-columns:2.2em 1fr auto;align-items:center;gap:8px;background:#e3f4f7;border-radius:12px;padding:4px 12px;font-size:17px;font-weight:700;text-align:left}
+.hs-list li .p{color:var(--sea);font-variant-numeric:tabular-nums}
+.hs-list li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-list li .s{font-variant-numeric:tabular-nums;color:var(--ink)}
+.hs-list li.top1 .p{color:#d99a00}
+.hs-list li.me{background:#fff1a8;outline:3px solid var(--sun)}
+.hs-list li.empty{opacity:.45;font-weight:500}
 @media (max-height:620px){ #menu .card > p:not(.small){display:none} #menu .card{gap:8px} }
 </style>
 
@@ -112,6 +132,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
         <button class="play" id="btnPlay">Spielen</button>
         <button class="play alt" id="btnLevels">Level</button>
         <button class="play alt" id="btnRules">Baderegeln</button>
+        <button class="play alt" id="btnScores">Bestenliste</button>
       </div>
     </div>
   </div>
@@ -142,11 +163,27 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <h1 id="doneTitle">Level geschafft!</h1>
       <div class="stars" id="doneStars"></div>
       <div class="score-big" id="doneScore"></div>
+      <form class="hs-entry" id="hsEntry" hidden>
+        <b id="hsEntryTitle">Du kommst in die Bestenliste!</b>
+        <label for="hsName" class="small">Wie heißt du?</label>
+        <div class="hs-row"><input id="hsName" maxlength="12" autocomplete="off" enterkeyhint="done" placeholder="Dein Name"><button class="play" type="submit">Eintragen</button></div>
+      </form>
       <div class="tip"><b id="tipLabel">Baderegel</b><span id="tipText"></span></div>
       <div class="btns">
         <button class="play" id="btnNext">Weiter</button>
         <button class="play alt" id="btnRetry">Nochmal</button>
+        <button class="play alt" id="btnDoneScores">Bestenliste</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Bestenliste -->
+  <div class="overlay" id="scores" hidden>
+    <div class="card">
+      <h1>Bestenliste</h1>
+      <div class="hs-nav"><button id="hsPrev" aria-label="Vorheriges Level">‹</button><strong id="hsLevel">Level 1: Lagune</strong><button id="hsNext" aria-label="Nächstes Level">›</button></div>
+      <ol class="hs-list" id="hsList"></ol>
+      <button class="play alt" id="btnScoresBack">Zurück</button>
     </div>
   </div>
 
@@ -348,7 +385,7 @@ const groundY = () => H - floorH()*(1 - L().gf);
 for (let i=0;i<26;i++) S.streaks.push({x:Math.random(), y:Math.random(), l:.5+Math.random()});
 for (let i=0;i<7;i++) S.blasen.push({x:Math.random(), y:Math.random(), s:.5+Math.random()*.7, v:.025+Math.random()*.03, k:Math.random()<.5?'blasen1':'blasen2', p:Math.random()*6});
 
-const OVERLAYS = ['menu','levelSel','rulesBox','done','fail','paused'];
+const OVERLAYS = ['menu','levelSel','rulesBox','done','fail','paused','scores'];
 function show(id){ for (const o of OVERLAYS) $(o).hidden = o !== id; $('hud').hidden = !(id===null || id==='paused'); }
 
 function startLevel(i){
@@ -364,6 +401,55 @@ function updHud(){
 }
 function setFace(f,t){ S.face=f; S.faceT=t; }
 
+// ---------- Bestenliste (Top 10 pro Level, nur auf diesem Gerät) ----------
+let HS = {};
+try { HS = JSON.parse(localStorage.getItem('ocean-hs-v1')) || {}; } catch(e){ HS = {}; }
+let lastName = '';
+try { lastName = localStorage.getItem('ocean-name') || ''; } catch(e){}
+const hsList = i => HS[i] || (HS[i] = []);
+const hsQualifies = (i, sc) => sc > 0 && (hsList(i).length < 10 || sc > hsList(i)[9].s);
+function hsAdd(i, name, sc){
+  const l = hsList(i), e = {n:name, s:sc, d:Date.now()};
+  let p = l.findIndex(x => sc > x.s); if (p < 0) p = l.length;
+  l.splice(p, 0, e); l.length = Math.min(l.length, 10);
+  try { localStorage.setItem('ocean-hs-v1', JSON.stringify(HS)); } catch(e){}
+  return e;
+}
+let hsView = 0, hsMine = null, hsBack = 'menu';
+function showScores(i, back){
+  hsView = i; hsBack = back; renderScores(); show('scores');
+}
+function renderScores(){
+  const lv = LEVELS[hsView];
+  $('hsLevel').textContent = 'Level ' + (hsView+1) + ': ' + lv.name;
+  $('hsPrev').disabled = hsView === 0; $('hsNext').disabled = hsView === LEVELS.length-1;
+  const ol = $('hsList'); ol.textContent = '';
+  const l = hsList(hsView);
+  for (let k = 0; k < 10; k++){
+    const li = document.createElement('li'), e = l[k];
+    const p = document.createElement('span'); p.className = 'p'; p.textContent = (k+1) + '.';
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = e ? e.n : '–';
+    const sc = document.createElement('span'); sc.className = 's'; sc.textContent = e ? e.s + ' ★' : '';
+    li.append(p, n, sc);
+    if (!e) li.classList.add('empty'); if (k === 0 && e) li.classList.add('top1'); if (e && e === hsMine) li.classList.add('me');
+    ol.append(li);
+  }
+}
+$('hsPrev').onclick = () => { if (hsView > 0){ hsView--; renderScores(); } };
+$('hsNext').onclick = () => { if (hsView < LEVELS.length-1){ hsView++; renderScores(); } };
+$('btnScores').onclick = () => { hsMine = null; showScores(0, 'menu'); };
+$('btnDoneScores').onclick = () => showScores(S.lvl, 'done');
+$('btnScoresBack').onclick = () => show(hsBack);
+$('hsEntry').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('hsName').value.trim().slice(0, 12) || 'Ocean-Fan';
+  lastName = name; try { localStorage.setItem('ocean-name', name); } catch(err){}
+  hsMine = hsAdd(S.lvl, name, S.score);
+  $('hsName').blur(); $('hsEntry').hidden = true; $('done').firstElementChild.classList.remove('entry');
+  beep(660,.12,'triangle',.14,1.3); setTimeout(()=>beep(990,.2,'triangle',.14,1.2),120);
+  showScores(S.lvl, 'done');
+});
+
 function levelDone(){
   S.mode='done';
   const st = L().stars, n = 1 + (S.score>=st[0]) + (S.score>=st[1]);
@@ -377,6 +463,14 @@ function levelDone(){
   if (k % 2 === 0){ $('tipLabel').textContent='Baderegel'; $('tipText').textContent = RULES[(k/2) % RULES.length]; }
   else { $('tipLabel').textContent='Wusstest du?'; $('tipText').textContent = FACTS[((k-1)/2) % FACTS.length]; }
   persist();
+  hsMine = null;
+  const q = hsQualifies(S.lvl, S.score);
+  $('hsEntry').hidden = !q; $('done').firstElementChild.classList.toggle('entry', q);
+  if (q){
+    const l = hsList(S.lvl), place = (l.findIndex(x => S.score > x.s) + 1) || l.length + 1;
+    $('hsEntryTitle').textContent = place === 1 ? 'Neuer Rekord! Platz 1!' : 'Du kommst auf Platz ' + place + '!';
+    $('hsName').value = lastName;
+  }
   $('btnNext').textContent = last ? 'Zum Menü' : 'Weiter';
   show('done'); beep(660,.12,'triangle',.14,1.3); setTimeout(()=>beep(880,.2,'triangle',.14,1.3),130);
 }
@@ -425,6 +519,7 @@ function aim(e){
   ocean.ty = e.clientY-b.top - (touch?45*U:0);
 }
 addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
   keys[e.key]=true;
   if (e.key===' '||e.key==='Escape'||e.key==='p'){ if(S.mode==='play') pause(); else if(S.mode==='pause') resume(); }
   if (e.key.startsWith('Arrow')||e.key===' ') e.preventDefault();
