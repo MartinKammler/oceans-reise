@@ -59,10 +59,12 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .tip{background:#fff6d6;border:2px solid #f1dc94;border-radius:18px;padding:10px 14px;text-align:left;width:100%}
 .tip b{display:block;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#a87a00}
 .tip span{font-size:18px;line-height:1.35;font-weight:600}
-.levels{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));grid-auto-rows:1fr;gap:8px;width:100%}
+.card.wide{max-width:680px}
+.lvl .n{font-size:13px;font-weight:800;color:var(--sea);letter-spacing:.04em}
 .lvl{font:inherit;background:#e3f4f7;color:var(--ink);border:3px solid #bfe3ea;border-radius:18px;padding:10px 8px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:2px}
-.lvl strong{font-size:18px;line-height:1.1}
+.lvl strong{font-size:16px;line-height:1.1;text-wrap:balance}
 .lvl small{font-size:13px;opacity:.7}
 .lvl .s{font-size:22px;color:#e0a800;letter-spacing:2px}
 .lvl:disabled{opacity:.5;cursor:default}
@@ -114,7 +116,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 
   <!-- Levelauswahl -->
   <div class="overlay" id="levelSel" hidden>
-    <div class="card">
+    <div class="card wide">
       <h1>Wohin schwimmt Ocean?</h1>
       <div class="levels" id="levelGrid"></div>
       <button class="play alt" data-back>Zurück</button>
@@ -204,18 +206,37 @@ const FACTS = [
   'Eine Plastikflasche braucht im Meer etwa 450 Jahre, bis sie zerfällt.',
   'Alte Fischernetze im Meer heißen Geisternetze. Tiere können sich darin verfangen.'
 ];
+// Felder: bg/floor/gf = Grafiken und Sandhöhe; speed/gap = Tempo und Abstand der Hindernisse;
+// current = Strömung (px/s), dark = Tiefsee mit Lichtkegel, wall = Abstand der Müllwände (s), goods = Gewichte der Goodies
 const LEVELS = [
-  {name:'Lagune', sub:'ruhig und flach', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.85, gap:2.0, fish:5, bads:['fels','seeigel'], stars:[25,50]},
-  {name:'Korallenriff', sub:'bunt und stachelig', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3, bads:['seeigel','fels','tuete'], stars:[30,60]},
-  {name:'Hafen', sub:'viel Müll im Wasser', bg:'bg_hafen', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.1, gap:1.35, fish:8, bads:['tuete','flasche','dose','netz','reifen','eimer'], stars:[30,60]},
-  {name:'Heimweg', sub:'zurück zum Strand', bg:'bg_hell', floor:'boden_mix', gf:.66, top:'#8ae6e8', bot:'#0f4a6e', speed:1.2, gap:1.2, fish:4, bads:['tuete','flasche','dose','netz','seeigel','fels','reifen'], stars:[35,70], beach:true}
+  {name:'Lagune', sub:'ruhig und flach', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.85, gap:2.0, fish:5,
+   bads:['fels','seeigel'], stars:[25,50], intro:'Sammle Seegras, Muscheln und Seesterne!'},
+  {name:'Seegraswiese', sub:'viel zu futtern', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.9, gap:1.8, fish:4,
+   bads:['seeigel','fels','tuete'], goods:{seegras:10,muschel:2,stern:1}, stars:[30,55], intro:'Hier wächst viel Seegras. Friss dich satt!'},
+  {name:'Korallenriff', sub:'bunt und stachelig', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3,
+   bads:['seeigel','fels','tuete'], stars:[30,60], intro:'Vorsicht vor den stacheligen Seeigeln!'},
+  {name:'Strömung', sub:'das Wasser zieht', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3, current:70,
+   bads:['seeigel','tuete','flasche'], stars:[30,60], intro:'Achtung, Strömung! Das Wasser zieht Ocean hoch und runter.'},
+  {name:'Hafen', sub:'viel Müll im Wasser', bg:'bg_hafen', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:1.45, fish:8,
+   bads:['tuete','flasche','dose','netz','reifen','eimer'], stars:[30,60], intro:'Im Hafen liegt viel Müll. Weich ihm aus!'},
+  {name:'Geisternetze', sub:'nicht verfangen', bg:'bg_hafen', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:1.5, fish:8, bigNets:true,
+   bads:['netz','netz','netz','dose','reifen'], stars:[30,60], intro:'Alte Fischernetze treiben im Wasser. Nicht verfangen!'},
+  {name:'Tiefsee', sub:'dunkel und still', bg:'bg_tief', floor:'boden_mix', gf:.66, top:'#1b4a7a', bot:'#061a33', speed:.95, gap:1.6, fish:6, dark:true,
+   bads:['seeigel','fels','netz','flasche'], stars:[30,55], intro:'Hier unten ist es dunkel. Ocean sieht nur, was nah ist.'},
+  {name:'Müllstrudel', sub:'such die Lücke', bg:'bg_hafen', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:2.4, fish:9, wall:3.4,
+   bads:['tuete','dose','reifen','eimer'], stars:[30,60], intro:'Ganze Müllwände! Such die Lücke.'},
+  {name:'Wilde See', sub:'schnell und wild', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.2, gap:1.35, fish:3, current:90,
+   bads:['tuete','flasche','dose','netz','seeigel','fels'], stars:[35,65], intro:'Schnell und wild. Halt durch!'},
+  {name:'Heimweg', sub:'zurück zum Strand', bg:'bg_hell', floor:'boden_mix', gf:.66, top:'#8ae6e8', bot:'#0f4a6e', speed:1.2, gap:1.3, fish:4, wall:6,
+   bads:['tuete','flasche','dose','netz','seeigel','fels','reifen'], stars:[35,70], beach:true, intro:'Fast geschafft! Bring Ocean nach Hause zum Strand.'}
 ];
 const LEVEL_TIME = 60;
 
 // ---------- Speicher (nur Komfort) ----------
-let save = {stars:[0,0,0,0], tip:0};
-try { const s = JSON.parse(localStorage.getItem('ocean-save')); if (s && s.stars) save = s; } catch(e){}
-const persist = () => { try { localStorage.setItem('ocean-save', JSON.stringify(save)); } catch(e){} };
+let save = {stars:[], tip:0};
+try { const s = JSON.parse(localStorage.getItem('ocean-save-v2')); if (s && s.stars) save = s; } catch(e){}
+while (save.stars.length < LEVELS.length) save.stars.push(0);
+const persist = () => { try { localStorage.setItem('ocean-save-v2', JSON.stringify(save)); } catch(e){} };
 const unlocked = i => i === 0 || save.stars[i-1] > 0;
 
 // ---------- Größe ----------
@@ -298,14 +319,14 @@ function drawPortraits(t){
 }
 
 // ---------- Spielzustand ----------
-const S = {mode:'menu', lvl:0, t:0, score:0, lives:3, inv:0, shield:0, spawnT:0, goodT:0, faceT:0, face:'happy', objs:[], fx:[], fish:[], blasen:[], fishT:2, scroll:0};
+const S = {mode:'menu', lvl:0, t:0, score:0, lives:3, inv:0, shield:0, spawnT:0, goodT:0, faceT:0, face:'happy', objs:[], fx:[], fish:[], blasen:[], fishT:2, scroll:0, wallT:0, banner:null, streaks:[]};
 const ocean = {x:0,y:0,tx:0,ty:0,tilt:0,flap:0};
 const keys = {};
 const L = () => LEVELS[S.lvl];
 const OR = () => 34*U;
 
 // Grafiken aus den Asset-Paketen
-const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch1": [200, 162], "fisch2": [200, 140], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497]};
+const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch1": [200, 162], "fisch2": [200, 140], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "bg_tief": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497]};
 const SPR = {};
 for (const k in ASSETS){ const im = new Image(); im.src = 'img/' + k + (k.startsWith('bg_') ? '.jpg' : '.webp'); SPR[k] = im; }
 const ok = k => SPR[k] && SPR[k].complete && SPR[k].naturalWidth > 0;
@@ -315,6 +336,7 @@ const GROUND = {fels:1, eimer:1, reifen:1};
 const floorH = () => Math.max(110, Math.min(H*.3, 260));
 const groundY = () => H - floorH()*(1 - L().gf);
 
+for (let i=0;i<26;i++) S.streaks.push({x:Math.random(), y:Math.random(), l:.5+Math.random()});
 for (let i=0;i<7;i++) S.blasen.push({x:Math.random(), y:Math.random(), s:.5+Math.random()*.7, v:.025+Math.random()*.03, k:Math.random()<.5?'blasen1':'blasen2', p:Math.random()*6});
 
 const OVERLAYS = ['menu','levelSel','rulesBox','done','fail','paused'];
@@ -324,7 +346,7 @@ function startLevel(i){
   S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
   setFace('determined',1.5);
   ocean.x=ocean.tx=W*.22; ocean.y=ocean.ty=H*.5;
-  S.fish=[]; S.fishT=1; S.scroll=0; $('lvlName').textContent = L().name; updHud();
+  S.fish=[]; S.fishT=1; S.scroll=0; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
   S.mode='play'; show(null); beep(520,.15,'triangle',.14,1.6);
 }
 function updHud(){
@@ -376,7 +398,7 @@ function buildLevelGrid(){
   $('levelGrid').innerHTML = LEVELS.map((l,i) => {
     const s = save.stars[i];
     return `<button class="lvl" data-l="${i}" ${unlocked(i)?'':'disabled'}>
-      <strong>${i+1}. ${l.name}</strong><small>${unlocked(i) ? l.sub : 'noch gesperrt'}</small>
+      <span class="n">LEVEL ${i+1}</span><strong>${l.name}</strong><small>${unlocked(i) ? l.sub : 'noch gesperrt'}</small>
       <span class="s">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span></button>`;
   }).join('');
   $('levelGrid').querySelectorAll('.lvl').forEach(b => b.onclick = () => startLevel(+b.dataset.l));
@@ -402,19 +424,30 @@ addEventListener('keyup', e => keys[e.key]=false);
 
 // ---------- Objekte ----------
 const GOODS=[{k:'seegras',pts:1,w:6},{k:'muschel',pts:3,w:3},{k:'stern',pts:5,w:1.2}];
-function spawnBad(){
-  const bads=L().bads, k=bads[Math.floor(Math.random()*bads.length)];
+function spawnBad(kForce, yForce){
+  const lv=L(), bads=lv.bads, k=kForce || bads[Math.floor(Math.random()*bads.length)];
   const img = k==='fels' ? 'fels'+(1+Math.floor(Math.random()*3)) : k;
-  const a = ASSETS[img], d = SIZE[k]*U, sc = d/Math.max(a[0],a[1]), w=a[0]*sc, h=a[1]*sc;
+  const big = (lv.bigNets && k==='netz') ? 1+Math.random()*.5 : 1;
+  const a = ASSETS[img], d = SIZE[k]*U*big, sc = d/Math.max(a[0],a[1]), w=a[0]*sc, h=a[1]*sc;
   const gy = groundY();
-  let ground = !!GROUND[k] || (k==='seeigel' && Math.random()<.5), y, r;
+  let ground = yForce===undefined && (!!GROUND[k] || (k==='seeigel' && Math.random()<.5)), y, r;
   if (ground){ y = gy - h*.42 + h*.06; r = Math.min(w,h)*.5; }   // sitzt im Sand
-  else { y = H*.18 + Math.random()*(gy - 50*U - H*.18); r = d*.4; }
-  S.objs.push({bad:true,k,img,w,h,ground,x:W+w,y,r,ph:Math.random()*6});
+  else { y = yForce!==undefined ? yForce : H*.18 + Math.random()*(gy - 50*U - H*.18); r = d*.4; }
+  S.objs.push({bad:true,k,img,w,h,ground,wall:yForce!==undefined,x:W+w,y,r,ph:Math.random()*6});
+}
+// Müllwand: eine Reihe Müll von oben bis zum Grund, mit einer großzügigen Lücke
+function spawnWall(){
+  const items=['tuete','flasche','dose'], top=H*.14, bot=groundY()-24*U, gapH=OR()*3.6;
+  const gapC = top + gapH/2 + Math.random()*Math.max(1, bot-top-gapH);
+  for (let y=top+24*U; y<bot; y+=44*U){
+    if (Math.abs(y-gapC) < gapH/2) continue;
+    spawnBad(items[Math.floor(Math.random()*3)], y);
+  }
 }
 function spawnGood(){
-  let tot=GOODS.reduce((a,g)=>a+g.w,0), r=Math.random()*tot, g=GOODS[0];
-  for (const it of GOODS){ if((r-=it.w)<0){g=it;break;} }
+  const gw=L().goods, list=GOODS.map(g=>({...g, w: gw ? gw[g.k] : g.w}));
+  let tot=list.reduce((a,g)=>a+g.w,0), r=Math.random()*tot, g=list[0];
+  for (const it of list){ if((r-=it.w)<0){g=it;break;} }
   let k=g.k, pts=g.pts;
   if (S.lives<3 && Math.random()<.07){ k='herz'; pts=0; }
   else if (S.shield<=0 && Math.random()<.04){ k='boje'; pts=0; }
@@ -447,6 +480,8 @@ function update(dt){
   const kv=340*U*dt;
   if(keys.ArrowUp||keys.w) ocean.ty-=kv; if(keys.ArrowDown||keys.s) ocean.ty+=kv;
   if(keys.ArrowLeft||keys.a) ocean.tx-=kv; if(keys.ArrowRight||keys.d) ocean.tx+=kv;
+  const cur = lv.current ? Math.sin(S.t*.55)*lv.current*U : 0;   // Strömung hoch/runter
+  ocean.ty += cur*dt;
   ocean.tx=Math.max(R*1.2,Math.min(W*.7,ocean.tx));
   ocean.ty=Math.max(R+70*U,Math.min(groundY()-R*.35,ocean.ty));
   const py=ocean.y;
@@ -460,6 +495,8 @@ function update(dt){
 
   const ending = S.t > LEVEL_TIME - 4;   // kurz vor Schluss keine neuen Hindernisse
   S.spawnT-=dt; S.goodT-=dt;
+  if (lv.wall){ S.wallT-=dt; if (S.wallT<=0 && !ending){ spawnWall(); S.wallT=lv.wall; S.spawnT=Math.max(S.spawnT,1.1); } }
+  if (S.banner){ S.banner.t-=dt; if (S.banner.t<=0) S.banner=null; }
   if (S.spawnT<=0 && !ending){ spawnBad(); S.spawnT = lv.gap*(.7+Math.random()*.6) * (1 - Math.min(.25,S.t/240)); }
   if (S.goodT<=0 && S.t < LEVEL_TIME-2){ spawnGood(); S.goodT=.7+Math.random()*.8; }
 
@@ -467,7 +504,8 @@ function update(dt){
   const cx=ocean.x+R*.25, cy=ocean.y-R*.05;
   for (const o of S.objs){
     o.x -= vx*dt*(o.ground ? 1 : o.k==='netz' ? .85 : 1); o.ph+=dt;
-    if (o.k==='tuete'||o.k==='netz') o.y += Math.sin(o.ph*2)*28*U*dt;
+    if (!o.wall && (o.k==='tuete'||o.k==='netz')) o.y += Math.sin(o.ph*2)*28*U*dt;
+    if (cur && !o.ground) o.y += cur*.5*dt;
     const dx=o.x-cx, dy=o.y-cy, hit=(o.r+R*.9)*(o.bad?.68:1.05);
     if (o.dead || dx*dx+dy*dy >= hit*hit) continue;
     if (o.bad){
@@ -518,6 +556,17 @@ function drawBg(){
     ctx.drawImage(SPR[b.k], b.x*W + Math.sin(now+b.p)*6*U, b.y*H, w, h); }
   ctx.globalAlpha=1;
   // Fische
+  const lvc = S.mode==='menu' ? 0 : (lv.current||0);
+  if (lvc){
+    const c = Math.sin(S.t*.55);
+    ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.lineWidth=2*U; ctx.lineCap='round';
+    const span=H*.85, drift=-Math.cos(S.t*.55)/.55*lvc*U;
+    for (const st of S.streaks){
+      const x=((st.x*(W+80) - S.scroll*1.4*st.l) % (W+80) + (W+80)) % (W+80) - 40;
+      const y=((st.y*span + drift*st.l) % span + span) % span, l=34*U*st.l;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+l, y - c*l*.5); ctx.stroke();
+    }
+  }
   for (const f of S.fish){ if(!ok(f.k)) continue; const a=ASSETS[f.k], h=f.w*a[1]/a[0];
     ctx.drawImage(SPR[f.k], f.x, f.y + Math.sin(f.p*2)*6*U, f.w, h); }
 }
@@ -563,6 +612,19 @@ function draw(){
   const blink = S.inv>0 && Math.floor(S.inv*10)%2===0;
   if (!blink && S.mode!=='menu'){
     drawOcean(ctx, ocean.x, ocean.y, OR(), {flap:ocean.flap, tilt:ocean.tilt, face:S.face, shield:S.shield>0});
+  }
+  if (S.mode!=='menu' && L().dark){
+    const g=ctx.createRadialGradient(ocean.x+OR()*.3, ocean.y, 110*U, ocean.x+OR()*.3, ocean.y, 330*U);
+    g.addColorStop(0,'rgba(2,14,32,0)'); g.addColorStop(1,'rgba(2,14,32,.86)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+  if (S.banner && S.mode==='play'){
+    const a=Math.min(1,S.banner.t/.5); ctx.globalAlpha=a;
+    ctx.font=`800 ${Math.max(18,24*U)}px "Baloo 2", system-ui, sans-serif`; ctx.textAlign='center';
+    const tw=Math.min(W-32, ctx.measureText(S.banner.txt).width+40), bx=W/2-tw/2, by=H*.2;
+    ctx.fillStyle='rgba(244,251,252,.92)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx,by,tw,46*Math.max(1,U),23) : ctx.rect(bx,by,tw,46); ctx.fill();
+    ctx.fillStyle='#13324a'; ctx.fillText(S.banner.txt, W/2, by+31*Math.max(1,U), W-48);
+    ctx.globalAlpha=1;
   }
   ctx.textAlign='center'; ctx.font=`800 ${24*U}px "Baloo 2", system-ui, sans-serif`;
   for (const f of S.fx){ ctx.globalAlpha=1-f.t/.9; ctx.fillStyle=f.col; ctx.strokeStyle='rgba(19,50,74,.6)'; ctx.lineWidth=4;

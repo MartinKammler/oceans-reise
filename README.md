@@ -11,18 +11,24 @@ Ein Ausweichspiel für Kinder (6–9 Jahre): Die kleine Schildkröte Ocean schwi
 
 ## Spielablauf
 
-Vier Level à 60 Sekunden, jedes mit eigenem Hintergrund und Meeresboden:
+Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem kurzen Hinweis zum Start:
 
-| Level | Hindernisse | Besonderheit |
+| Level | Besonderheit | Hindernisse |
 |---|---|---|
-| 1. Lagune | Felsen, Seeigel | ruhig, zum Eingewöhnen |
-| 2. Korallenriff | Seeigel, Felsen, Plastiktüte | etwas schneller |
-| 3. Hafen | Tüte, Flasche, Dose, Netz, Reifen, Eimer | viel Müll |
-| 4. Heimweg | fast alles gemischt | am Ende kommt der Strand ins Bild |
+| 1. Lagune | ruhig, zum Eingewöhnen | Felsen, Seeigel |
+| 2. Seegraswiese | besonders viel Seegras | Seeigel, Felsen, Tüte |
+| 3. Korallenriff | etwas schneller | Seeigel, Felsen, Tüte |
+| 4. Strömung | Wasser zieht Ocean hoch und runter | Seeigel, Tüte, Flasche |
+| 5. Hafen | viel Müll | Tüte, Flasche, Dose, Netz, Reifen, Eimer |
+| 6. Geisternetze | viele große, treibende Netze | Netze, Dose, Reifen |
+| 7. Tiefsee | dunkel, Ocean sieht nur ihre Umgebung | Seeigel, Felsen, Netz, Flasche |
+| 8. Müllstrudel | Müllwände mit einer Lücke | Wände aus Tüten, Flaschen, Dosen |
+| 9. Wilde See | schnell und starke Strömung | fast alles |
+| 10. Heimweg | Müllwände, am Ende kommt der Strand | fast alles |
 
 **Goodies:** Seegras +1, Muschel +3, Seestern +5, Herz (Leben zurück), Rettungsring (5 Sekunden Schutzschild)
 
-3 Leben pro Level. Wer sie verliert, startet nur das Level neu. 1 Stern fürs Schaffen, 2 und 3 Sterne je nach Punkten. Fortschritt wird im Browser gespeichert (localStorage).
+3 Leben pro Level. Wer sie verliert, startet nur das Level neu. 1 Stern fürs Schaffen, 2 und 3 Sterne je nach Punkten. Ein Level wird freigeschaltet, sobald das vorherige geschafft ist. Fortschritt wird im Browser gespeichert (localStorage, Schlüssel `ocean-save-v2`).
 
 ## Aufbau
 
