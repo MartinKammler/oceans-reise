@@ -26,7 +26,9 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 | 9. Wilde See | Wellen, starke Strömung | fast alles, viele Angelhaken |
 | 10. Heimweg | Müllwände, am Ende kommt der Strand | fast alles |
 
-**Goodies:** Seegras +1, Qualle +2, Krabbe +2, Muschel +3, Seepferdchen +4 (sagt Hallo und schwimmt weiter), Seestern +5, Schatztruhe +10, Herz (Leben zurück), Rettungsring (5 Sekunden Schutzschild)
+**Goodies:** Seegras +1, Qualle +2, Krabbe +2, Muschel +3, Seepferdchen +4 (sagt Hallo und schwimmt weiter), Seestern +5, Schatztruhe +10, Herz (Leben zurück), Rettungsgeräte (Rettungsring, Rettungsboje, Gurtretter: 5 Sekunden Schutzschild, der Name wird beim Einsammeln angezeigt)
+
+**Meeresmüll:** Dosen, Flaschen und Netze gibt es in vielen Varianten, dazu Becher, Strohhalme, Sixpack-Ringe, Kanister und Plastikteile. Pro Hindernis-Art wird zufällig eine Bildvariante gewählt (`VARIANTS` in `index.html`).
 
 **Besondere Hindernisse:** Anker und Angelhaken hängen von oben ins Wasser, der Kugelfisch bläst sich auf und schrumpft, der Anglerfisch schwimmt Ocean entgegen und leuchtet in der Tiefsee.
 
