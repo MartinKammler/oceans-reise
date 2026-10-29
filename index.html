@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ocean im Meer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<style>
+/* Layout: ein Bildschirm; Spielfläche füllt alles, HUD oben, Karten (Menü, Level, Regeln) mittig darüber. Bewusst ein einziger Unterwasser-Look für beide Themes. */
+:root{
+  --deep:#0f4a6e; --sea:#1f8fb0; --shallow:#8ae6e8; --sand:#f3dfa8;
+  --ring:#e5262a; --shell:#2f6b2a; --sun:#ffd23f; --ink:#13324a; --foam:#ffffff; --paper:#f4fbfc;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  color-scheme: dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0}
+html,body{height:100%}
+body{background:var(--deep);color:var(--foam);font-family:var(--display);overflow:hidden;touch-action:none;
+  user-select:none;-webkit-user-select:none}
+#wrap{position:relative;width:100%;height:100%}
+#c{display:block;width:100%;height:100%}
+
+.hud{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));
+  right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.hud-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pill{background:rgba(19,50,74,.55);border:2px solid rgba(255,255,255,.28);border-radius:999px;padding:2px 14px;
+  font-weight:800;font-size:clamp(17px,3.2vw,24px);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hearts{color:#ff6b6b;letter-spacing:2px}
+.btn-row{display:flex;gap:8px;pointer-events:auto}
+.icon-btn{font:inherit;font-weight:800;font-size:16px;color:var(--foam);background:rgba(19,50,74,.55);
+  border:2px solid rgba(255,255,255,.28);border-radius:999px;min-width:44px;height:44px;padding:0 10px;cursor:pointer}
+.progress{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.bar{flex:1;height:10px;background:rgba(19,50,74,.5);border-radius:99px;overflow:hidden;border:2px solid rgba(255,255,255,.25)}
+.bar i{display:block;height:100%;width:0;background:var(--sun);border-radius:99px}
+
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,74,110,.38);
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--paper);color:var(--ink);border-radius:28px;padding:20px 24px 22px;max-width:460px;width:100%;
+  max-height:100%;overflow:auto;text-align:center;box-shadow:0 10px 0 rgba(10,40,60,.35);
+  display:flex;flex-direction:column;gap:12px;align-items:center}
+.card h1{margin:0;font-size:clamp(28px,6vw,42px);line-height:1.05;color:var(--sea);text-wrap:balance}
+.card h2{margin:0;font-size:24px;color:var(--sea)}
+.card p{margin:0;font-size:18px;line-height:1.35;font-weight:500;max-width:36ch}
+.portrait{width:210px;height:130px;max-width:100%}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.play{font:inherit;font-weight:800;font-size:22px;color:var(--foam);background:var(--ring);border:none;border-radius:999px;
+  padding:8px 30px;cursor:pointer;box-shadow:0 5px 0 #a3171a}
+.play.alt{background:var(--sea);box-shadow:0 5px 0 #145f78}
+.play:active{transform:translateY(3px);box-shadow:0 2px 0 #a3171a}
+.play.alt:active{box-shadow:0 2px 0 #145f78}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.stars{font-size:46px;letter-spacing:6px;line-height:1;color:var(--sun);text-shadow:0 2px 0 #c99a00}
+.stars .off{color:#c9d6db;text-shadow:none}
+.score-big{font-size:22px;font-weight:700}
+.tip{background:#fff6d6;border:2px solid #f1dc94;border-radius:18px;padding:10px 14px;text-align:left;width:100%}
+.tip b{display:block;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#a87a00}
+.tip span{font-size:18px;line-height:1.35;font-weight:600}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.lvl{font:inherit;background:#e3f4f7;color:var(--ink);border:3px solid #bfe3ea;border-radius:18px;padding:10px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.lvl strong{font-size:18px;line-height:1.1}
+.lvl small{font-size:13px;opacity:.7}
+.lvl .s{font-size:22px;color:#e0a800;letter-spacing:2px}
+.lvl:disabled{opacity:.5;cursor:default}
+.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
+.rules li{background:#e3f4f7;border-radius:14px;padding:8px 12px;font-size:17px;line-height:1.35;font-weight:600;display:flex;gap:10px}
+.rules li::before{content:"";flex:0 0 14px;height:14px;margin-top:5px;border-radius:50%;border:4px solid var(--ring);background:var(--paper)}
+.intro{font-size:16px !important;opacity:.85}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;width:100%;font-size:15px;font-weight:700;text-align:left}
+.legend .bad{color:#b4322c}
+.small{font-size:15px !important;opacity:.75}
+</style>
+
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" aria-label="Spielfläche: Ocean schwimmt im Meer"></canvas>
+
+  <div class="hud" id="hud" hidden>
+    <div class="hud-row">
+      <div class="pill" aria-label="Punkte">★ <span id="score">0</span></div>
+      <div class="pill hearts" id="hearts" aria-label="Leben">♥♥♥</div>
+      <div class="btn-row">
+        <button class="icon-btn" id="sound" aria-label="Ton an oder aus">Ton an</button>
+        <button class="icon-btn" id="pause" aria-label="Pause">II</button>
+      </div>
+    </div>
+    <div class="progress"><span id="lvlName">Lagune</span><div class="bar"><i id="barFill"></i></div></div>
+  </div>
+
+  <!-- Startmenü -->
+  <div class="overlay" id="menu">
+    <div class="card">
+      <canvas class="portrait" data-pose="wave"></canvas>
+      <h1>Ocean im Meer</h1>
+      <p>Hilf Ocean, sicher durchs Meer nach Hause zu schwimmen. Sammle Leckeres und weiche dem Müll aus!</p>
+      <div class="legend">
+        <div>Seegras +1</div><div>Muschel +3</div>
+        <div>Seestern +5</div><div>Herz: Leben zurück</div>
+        <div>Rettungsring: Schutzschild</div><div class="bad">Müll &amp; Steine: ausweichen!</div>
+      </div>
+      <p class="small">Finger oder Maus bewegen, oder Pfeiltasten.</p>
+      <div class="btns">
+        <button class="play" id="btnPlay">Spielen</button>
+        <button class="play alt" id="btnLevels">Level</button>
+        <button class="play alt" id="btnRules">Baderegeln</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Levelauswahl -->
+  <div class="overlay" id="levelSel" hidden>
+    <div class="card">
+      <h1>Wohin schwimmt Ocean?</h1>
+      <div class="levels" id="levelGrid"></div>
+      <button class="play alt" data-back>Zurück</button>
+    </div>
+  </div>
+
+  <!-- Baderegeln -->
+  <div class="overlay" id="rulesBox" hidden>
+    <div class="card">
+      <h1>Die Baderegeln</h1>
+      <p class="intro">Hier haben wir ein paar einfache, aber wichtige Baderegeln für euch. Bitte haltet euch daran – dann steht dem Badespaß nichts mehr im Weg!</p>
+      <ul class="rules" id="rulesList"></ul>
+      <button class="play alt" data-back>Zurück</button>
+    </div>
+  </div>
+
+  <!-- Level geschafft -->
+  <div class="overlay" id="done" hidden>
+    <div class="card">
+      <canvas class="portrait" data-pose="wave"></canvas>
+      <h1 id="doneTitle">Level geschafft!</h1>
+      <div class="stars" id="doneStars"></div>
+      <div class="score-big" id="doneScore"></div>
+      <div class="tip"><b id="tipLabel">Baderegel</b><span id="tipText"></span></div>
+      <div class="btns">
+        <button class="play" id="btnNext">Weiter</button>
+        <button class="play alt" id="btnRetry">Nochmal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verloren -->
+  <div class="overlay" id="fail" hidden>
+    <div class="card">
+      <canvas class="portrait" data-pose="worried"></canvas>
+      <h1>Oh nein!</h1>
+      <p>Ocean braucht eine kleine Pause. Versuch es gleich nochmal!</p>
+      <div class="tip"><b>Wusstest du?</b><span id="failFact"></span></div>
+      <div class="btns">
+        <button class="play" id="btnRetry2">Nochmal</button>
+        <button class="play alt" data-menu>Zum Menü</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause -->
+  <div class="overlay" id="paused" hidden>
+    <div class="card">
+      <canvas class="portrait" data-pose="happy"></canvas>
+      <h1>Pause</h1>
+      <p>Ocean wartet auf dich.</p>
+      <div class="btns">
+        <button class="play" id="btnResume">Weiter</button>
+        <button class="play alt" data-menu>Zum Menü</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- Inhalte ----------
+const RULES = [
+  'Ich gehe nur baden, wenn ich mich gut fühle.',
+  'Ich gehe nur baden, wenn mir bei Problemen jemand helfen kann.',
+  'Wenn ich Probleme im Wasser habe, dann rufe ich laut um Hilfe und winke mit den Armen. Ich helfe Anderen, wenn sie im Wasser Probleme haben. Ich rufe nie „Hilfe“, wenn alles in Ordnung ist.',
+  'Ich sage Bescheid, wenn ich ins Wasser gehe.',
+  'Ich gehe weder hungrig noch direkt nach dem Essen ins Wasser.',
+  'Ich kühle mich ab, bevor ich ins Wasser gehe.',
+  'Ich gehe nur da baden, wo es erlaubt ist.',
+  'Ich springe nur da ins Wasser, wo das Wasser tief und frei ist.',
+  'Ich nehme Rücksicht! Ich renne nicht, schubse nicht und drücke niemanden unter Wasser.',
+  'Schwimmflügel, Schwimmtiere und Luftmatratze sind nicht sicher und schützen mich nicht vor dem Ertrinken.',
+  'Wenn ich draußen bade, gehe ich sofort aus dem Wasser, wenn es blitzt, donnert oder stark regnet. Baden bei Gewitter ist lebensgefährlich.'
+];
+const FACTS = [
+  'Meeresschildkröten verwechseln Plastiktüten oft mit Quallen. Darum gehört Müll nie ins Meer!',
+  'Meeresschildkröten gibt es schon seit über 100 Millionen Jahren. Sie lebten schon zur Zeit der Dinosaurier.',
+  'Schildkröten-Babys schlüpfen am Strand und krabbeln nachts zum Meer.',
+  'Meeresschildkröten müssen zum Atmen auftauchen, können aber sehr lange die Luft anhalten.',
+  'Die Lederschildkröte ist die größte Schildkröte der Welt, fast so lang wie ein Auto!',
+  'Meeresschildkröten können ihren Kopf nicht in den Panzer einziehen.',
+  'Eine Plastikflasche braucht im Meer etwa 450 Jahre, bis sie zerfällt.',
+  'Alte Fischernetze im Meer heißen Geisternetze. Tiere können sich darin verfangen.'
+];
+const LEVELS = [
+  {name:'Lagune', sub:'ruhig und flach', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.85, gap:2.0, fish:5, bads:['fels','seeigel'], stars:[25,50]},
+  {name:'Korallenriff', sub:'bunt und stachelig', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3, bads:['seeigel','fels','tuete'], stars:[30,60]},
+  {name:'Hafen', sub:'viel Müll im Wasser', bg:'bg_hafen', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.1, gap:1.35, fish:8, bads:['tuete','flasche','dose','netz','reifen','eimer'], stars:[30,60]},
+  {name:'Heimweg', sub:'zurück zum Strand', bg:'bg_hell', floor:'boden_mix', gf:.66, top:'#8ae6e8', bot:'#0f4a6e', speed:1.2, gap:1.2, fish:4, bads:['tuete','flasche','dose','netz','seeigel','fels','reifen'], stars:[35,70], beach:true}
+];
+const LEVEL_TIME = 60;
+
+// ---------- Speicher (nur Komfort) ----------
+let save = {stars:[0,0,0,0], tip:0};
+try { const s = JSON.parse(localStorage.getItem('ocean-save')); if (s && s.stars) save = s; } catch(e){}
+const persist = () => { try { localStorage.setItem('ocean-save', JSON.stringify(save)); } catch(e){} };
+const unlocked = i => i === 0 || save.stars[i-1] > 0;
+
+// ---------- Größe ----------
+let W=0,H=0,DPR=1,U=1;
+function resize(){
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  U = Math.max(0.6, Math.min(W,H)/500);
+}
+addEventListener('resize', resize); resize();
+
+// ---------- Ton ----------
+let audio=null, soundOn=true;
+function beep(f,d=.12,type='sine',vol=.14,slide=0){
+  if(!soundOn) return;
+  try{
+    audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+    const o=audio.createOscillator(), g=audio.createGain(), t=audio.currentTime;
+    o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(f*slide,t+d);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+d);
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t+d);
+  }catch(e){}
+}
+$('sound').onclick = () => { soundOn=!soundOn; $('sound').textContent = soundOn ? 'Ton an' : 'Ton aus'; };
+
+// ---------- Ocean (aus Martins Grafiken zusammengesetzt) ----------
+const RIG = {"body": {"w": 498, "h": 322, "px": -49.2, "py": -46.0}, "head_happy": {"w": 275, "h": 218, "px": 19.6, "py": 156.0}, "head_surprised": {"w": 269, "h": 229, "px": 17.9, "py": 164.2}, "head_worried": {"w": 264, "h": 224, "px": 15.9, "py": 157.5}, "head_determined": {"w": 265, "h": 208, "px": 15.6, "py": 151.5}, "flip_front": {"w": 259, "h": 144, "px": 27.8, "py": 63.0}, "flip_front_far": {"w": 259, "h": 144, "px": 27.8, "py": 63.0}, "flip_back": {"w": 192, "h": 150, "px": 173.5, "py": 15.8}, "flip_back_far": {"w": 192, "h": 150, "px": 173.5, "py": 15.8}, "wave": {"w": 478, "h": 280, "px": -18.9, "py": -52.5}, "_anchors": {"K": 0.4, "head": [496.0, 192.0], "ff": [394.0, 286.0], "ff_far": [360.0, 272.0], "bf": [144.0, 308.0], "bf_far": [172.0, 296.0], "center": [288.0, 224.0]}};
+const IMG = {};
+for (const k of Object.keys(RIG)) if (k[0] !== '_') { const im = new Image(); im.src = 'img/' + k + '.png'; IMG[k] = im; }
+const ready = k => IMG[k] && IMG[k].complete && IMG[k].naturalWidth > 0;
+const AN = RIG._anchors;
+const RIG_W = 760, RIG_CX = 390, RIG_CY = 235;   // Breite und Mittelpunkt im Rig-Koordinatensystem
+
+function part(c, name, at, rot, sc = 1){
+  if (!ready(name)) return;
+  const p = RIG[name];
+  c.save(); c.translate(at[0], at[1]); if (rot) c.rotate(rot); if (sc !== 1) c.scale(sc, sc);
+  c.drawImage(IMG[name], -p.px, -p.py, p.w, p.h);
+  c.restore();
+}
+function drawOcean(c, x, y, R, o){
+  const t = o.flap || 0, f = Math.sin(t), face = o.face || 'happy';
+  const k = (R * 3.7) / RIG_W;
+  c.save(); c.translate(x, y); c.rotate(o.tilt || 0); c.scale(k, k);
+  if (o.shield){
+    const g = c.createRadialGradient(0,0,80,0,0,320);
+    g.addColorStop(0,'rgba(255,230,120,.6)'); g.addColorStop(1,'rgba(255,230,120,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(0,0,320,0,7); c.fill();
+  }
+  c.translate(-RIG_CX, -RIG_CY);
+  part(c,'flip_back_far',  AN.bf_far, .30 + Math.sin(t*.9 + 1.2)*.16);
+  part(c,'flip_front_far', AN.ff_far, -.05 + Math.sin(t + .9)*.32);
+  part(c,'flip_back',      AN.bf,     .38 + Math.sin(t*.9 + Math.PI)*.18);
+  part(c,'body',           [0,0],     0);
+  const pop = face === 'surprised' ? 1.06 : 1;
+  part(c,'head_' + face,   AN.head,   Math.sin(t*.5)*.05 - (o.tilt||0)*.3, pop);
+  part(c,'flip_front',     AN.ff,     .17 + f*.38);
+  c.restore();
+}
+
+// Porträts auf den Karten
+const portraits = [...document.querySelectorAll('canvas.portrait')];
+function drawPortraits(t){
+  for (const p of portraits){
+    if (p.closest('.overlay').hidden) continue;
+    const w = p.clientWidth, h = p.clientHeight; if (!w) continue;
+    if (p.width !== Math.round(w*DPR)){ p.width = Math.round(w*DPR); p.height = Math.round(h*DPR); }
+    const c = p.getContext('2d'); c.setTransform(DPR,0,0,DPR,0,0); c.clearRect(0,0,w,h);
+    const pose = p.dataset.pose, bob = reduce ? 0 : Math.sin(t*2)*3;
+    if (pose === 'wave' && ready('wave')){
+      const im = IMG.wave, sc = Math.min(w / im.naturalWidth, h / im.naturalHeight) * .98;
+      c.save(); c.translate(w/2, h/2 + bob); c.rotate(reduce ? 0 : Math.sin(t*1.6)*.04);
+      c.drawImage(im, -im.naturalWidth*sc/2, -im.naturalHeight*sc/2, im.naturalWidth*sc, im.naturalHeight*sc);
+      c.restore();
+    } else {
+      drawOcean(c, w*.5, h*.5 + bob, h*.33, { flap: reduce ? 0 : t*3, face: pose === 'worried' ? 'worried' : 'happy' });
+    }
+  }
+}
+
+// ---------- Spielzustand ----------
+const S = {mode:'menu', lvl:0, t:0, score:0, lives:3, inv:0, shield:0, spawnT:0, goodT:0, faceT:0, face:'happy', objs:[], fx:[], fish:[], blasen:[], fishT:2, scroll:0};
+const ocean = {x:0,y:0,tx:0,ty:0,tilt:0,flap:0};
+const keys = {};
+const L = () => LEVELS[S.lvl];
+const OR = () => 34*U;
+
+// Grafiken aus den Asset-Paketen
+const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch1": [200, 162], "fisch2": [200, 140], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497]};
+const SPR = {};
+for (const k in ASSETS){ const im = new Image(); im.src = 'img/' + k + (k.startsWith('bg_') ? '.jpg' : '.webp'); SPR[k] = im; }
+const ok = k => SPR[k] && SPR[k].complete && SPR[k].naturalWidth > 0;
+// Anzeigegröße (längste Seite in px bei U=1) und Bodenobjekte
+const SIZE = {tuete:66, flasche:64, dose:52, netz:104, seeigel:56, seegras:54, muschel:50, stern:52, herz:56, boje:60, fels:124, eimer:100, reifen:112};
+const GROUND = {fels:1, eimer:1, reifen:1};
+const floorH = () => Math.max(110, Math.min(H*.3, 260));
+const groundY = () => H - floorH()*(1 - L().gf);
+
+for (let i=0;i<7;i++) S.blasen.push({x:Math.random(), y:Math.random(), s:.5+Math.random()*.7, v:.025+Math.random()*.03, k:Math.random()<.5?'blasen1':'blasen2', p:Math.random()*6});
+
+const OVERLAYS = ['menu','levelSel','rulesBox','done','fail','paused'];
+function show(id){ for (const o of OVERLAYS) $(o).hidden = o !== id; $('hud').hidden = !(id===null || id==='paused'); }
+
+function startLevel(i){
+  S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
+  setFace('determined',1.5);
+  ocean.x=ocean.tx=W*.22; ocean.y=ocean.ty=H*.5;
+  S.fish=[]; S.fishT=1; S.scroll=0; $('lvlName').textContent = L().name; updHud();
+  S.mode='play'; show(null); beep(520,.15,'triangle',.14,1.6);
+}
+function updHud(){
+  $('score').textContent = S.score;
+  $('hearts').textContent = '♥'.repeat(Math.max(0,S.lives)) + '♡'.repeat(Math.max(0,3-S.lives));
+}
+function setFace(f,t){ S.face=f; S.faceT=t; }
+
+function levelDone(){
+  S.mode='done';
+  const st = L().stars, n = 1 + (S.score>=st[0]) + (S.score>=st[1]);
+  save.stars[S.lvl] = Math.max(save.stars[S.lvl], n);
+  const last = S.lvl === LEVELS.length-1;
+  $('doneTitle').textContent = last ? 'Ocean ist zu Hause!' : 'Level geschafft!';
+  $('doneStars').innerHTML = [0,1,2].map(i => `<span class="${i<n?'':'off'}">★</span>`).join('');
+  $('doneScore').textContent = S.score + ' Punkte';
+  // abwechselnd Baderegel und Meeres-Fakt
+  const k = save.tip++;
+  if (k % 2 === 0){ $('tipLabel').textContent='Baderegel'; $('tipText').textContent = RULES[(k/2) % RULES.length]; }
+  else { $('tipLabel').textContent='Wusstest du?'; $('tipText').textContent = FACTS[((k-1)/2) % FACTS.length]; }
+  persist();
+  $('btnNext').textContent = last ? 'Zum Menü' : 'Weiter';
+  show('done'); beep(660,.12,'triangle',.14,1.3); setTimeout(()=>beep(880,.2,'triangle',.14,1.3),130);
+}
+function levelFail(){
+  S.mode='fail';
+  $('failFact').textContent = FACTS[Math.floor(Math.random()*FACTS.length)];
+  show('fail'); beep(380,.5,'triangle',.14,.45);
+}
+
+// ---------- Buttons ----------
+$('btnPlay').onclick = () => { let i=0; while (i<LEVELS.length-1 && save.stars[i]>0) i++; startLevel(i); };
+$('btnLevels').onclick = () => { buildLevelGrid(); show('levelSel'); };
+$('btnRules').onclick = () => show('rulesBox');
+$('btnNext').onclick = () => S.lvl < LEVELS.length-1 ? startLevel(S.lvl+1) : toMenu();
+$('btnRetry').onclick = () => startLevel(S.lvl);
+$('btnRetry2').onclick = () => startLevel(S.lvl);
+$('btnResume').onclick = resume;
+$('pause').onclick = () => S.mode==='play' ? pause() : S.mode==='pause' && resume();
+document.querySelectorAll('[data-back]').forEach(b => b.onclick = toMenu);
+document.querySelectorAll('[data-menu]').forEach(b => b.onclick = toMenu);
+function toMenu(){ S.mode='menu'; S.objs=[]; show('menu'); }
+function pause(){ S.mode='pause'; show('paused'); }
+function resume(){ S.mode='play'; show(null); }
+document.addEventListener('visibilitychange', () => { if (document.hidden && S.mode==='play') pause(); });
+
+$('rulesList').innerHTML = RULES.map(r => `<li>${r}</li>`).join('');
+function buildLevelGrid(){
+  $('levelGrid').innerHTML = LEVELS.map((l,i) => {
+    const s = save.stars[i];
+    return `<button class="lvl" data-l="${i}" ${unlocked(i)?'':'disabled'}>
+      <strong>${i+1}. ${l.name}</strong><small>${unlocked(i) ? l.sub : 'noch gesperrt'}</small>
+      <span class="s">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span></button>`;
+  }).join('');
+  $('levelGrid').querySelectorAll('.lvl').forEach(b => b.onclick = () => startLevel(+b.dataset.l));
+}
+
+// ---------- Steuerung ----------
+let down=false;
+cv.addEventListener('pointerdown', e => { down=true; aim(e); });
+cv.addEventListener('pointermove', e => { if (down || e.pointerType==='mouse') aim(e); });
+addEventListener('pointerup', () => down=false);
+function aim(e){
+  if (S.mode!=='play') return;
+  const b=cv.getBoundingClientRect(), touch=e.pointerType==='touch';
+  ocean.tx = e.clientX-b.left + (touch?45*U:0);   // Finger verdeckt Ocean nicht
+  ocean.ty = e.clientY-b.top - (touch?45*U:0);
+}
+addEventListener('keydown', e => {
+  keys[e.key]=true;
+  if (e.key===' '||e.key==='Escape'||e.key==='p'){ if(S.mode==='play') pause(); else if(S.mode==='pause') resume(); }
+  if (e.key.startsWith('Arrow')||e.key===' ') e.preventDefault();
+});
+addEventListener('keyup', e => keys[e.key]=false);
+
+// ---------- Objekte ----------
+const GOODS=[{k:'seegras',pts:1,w:6},{k:'muschel',pts:3,w:3},{k:'stern',pts:5,w:1.2}];
+function spawnBad(){
+  const bads=L().bads, k=bads[Math.floor(Math.random()*bads.length)];
+  const img = k==='fels' ? 'fels'+(1+Math.floor(Math.random()*3)) : k;
+  const a = ASSETS[img], d = SIZE[k]*U, sc = d/Math.max(a[0],a[1]), w=a[0]*sc, h=a[1]*sc;
+  const gy = groundY();
+  let ground = !!GROUND[k] || (k==='seeigel' && Math.random()<.5), y, r;
+  if (ground){ y = gy - h*.42 + h*.06; r = Math.min(w,h)*.5; }   // sitzt im Sand
+  else { y = H*.18 + Math.random()*(gy - 50*U - H*.18); r = d*.4; }
+  S.objs.push({bad:true,k,img,w,h,ground,x:W+w,y,r,ph:Math.random()*6});
+}
+function spawnGood(){
+  let tot=GOODS.reduce((a,g)=>a+g.w,0), r=Math.random()*tot, g=GOODS[0];
+  for (const it of GOODS){ if((r-=it.w)<0){g=it;break;} }
+  let k=g.k, pts=g.pts;
+  if (S.lives<3 && Math.random()<.07){ k='herz'; pts=0; }
+  else if (S.shield<=0 && Math.random()<.04){ k='boje'; pts=0; }
+  const a = ASSETS[k], d = SIZE[k]*U, sc = d/Math.max(a[0],a[1]);
+  S.objs.push({bad:false,k,img:k,pts,w:a[0]*sc,h:a[1]*sc,x:W+d,y:H*.18+Math.random()*(groundY()-60*U-H*.18),r:d*.45,ph:Math.random()*6});
+}
+
+// ---------- Update ----------
+function update(dt){
+  S.t += S.mode==='play' ? dt : 0;
+  const vScroll = S.mode==='play' ? L().speed : .3;
+  const vx0 = 170*U*vScroll;
+  S.scroll += vx0*dt;
+  for (const b of S.blasen){ b.y-=b.v*dt; b.x-=vx0*.15*dt/W; if(b.y<-.15){b.y=1.1;b.x=Math.random()*1.1;} if(b.x<-.15) b.x=1.1; }
+  // Fische im Hintergrund
+  S.fishT -= dt;
+  const fishLv = S.mode==='menu' ? LEVELS[0] : L();
+  if (S.fishT<=0){ S.fishT = fishLv.fish*(.6+Math.random()*.8);
+    const k='fisch'+(1+Math.floor(Math.random()*3)), w=(34+Math.random()*16)*U;
+    S.fish.push({k, w, x:W+w, y:H*.15+Math.random()*H*.45, v:30*U+Math.random()*40*U, p:Math.random()*6}); }
+  for (const f of S.fish){ f.x -= (vx0*.5 + f.v)*dt; f.p += dt; }
+  S.fish = S.fish.filter(f => f.x > -f.w*2);
+  ocean.flap += dt*(S.mode==='play'?6:3);
+  if (S.mode!=='play'){
+    if (S.mode==='menu'){ ocean.x=W*.5+Math.sin(performance.now()/1600)*W*.18; ocean.y=H*.85+Math.sin(performance.now()/700)*8*U; ocean.tilt=0; }
+    return;
+  }
+  const lv=L(), R=OR();
+  // Tastatur
+  const kv=340*U*dt;
+  if(keys.ArrowUp||keys.w) ocean.ty-=kv; if(keys.ArrowDown||keys.s) ocean.ty+=kv;
+  if(keys.ArrowLeft||keys.a) ocean.tx-=kv; if(keys.ArrowRight||keys.d) ocean.tx+=kv;
+  ocean.tx=Math.max(R*1.2,Math.min(W*.7,ocean.tx));
+  ocean.ty=Math.max(R+70*U,Math.min(groundY()-R*.35,ocean.ty));
+  const py=ocean.y;
+  ocean.x+=(ocean.tx-ocean.x)*Math.min(1,dt*7);
+  ocean.y+=(ocean.ty-ocean.y)*Math.min(1,dt*7);
+  ocean.tilt += (Math.max(-.45,Math.min(.45,(ocean.y-py)/(dt*600*U))) - ocean.tilt)*Math.min(1,dt*8);
+
+  if (S.inv>0) S.inv-=dt;
+  if (S.shield>0) S.shield-=dt;
+  if (S.faceT>0){ S.faceT-=dt; if (S.faceT<=0) S.face = S.shield>0 ? 'determined' : 'happy'; }
+
+  const ending = S.t > LEVEL_TIME - 4;   // kurz vor Schluss keine neuen Hindernisse
+  S.spawnT-=dt; S.goodT-=dt;
+  if (S.spawnT<=0 && !ending){ spawnBad(); S.spawnT = lv.gap*(.7+Math.random()*.6) * (1 - Math.min(.25,S.t/240)); }
+  if (S.goodT<=0 && S.t < LEVEL_TIME-2){ spawnGood(); S.goodT=.7+Math.random()*.8; }
+
+  const vx=170*U*lv.speed;
+  const cx=ocean.x+R*.25, cy=ocean.y-R*.05;
+  for (const o of S.objs){
+    o.x -= vx*dt*(o.ground ? 1 : o.k==='netz' ? .85 : 1); o.ph+=dt;
+    if (o.k==='tuete'||o.k==='netz') o.y += Math.sin(o.ph*2)*28*U*dt;
+    const dx=o.x-cx, dy=o.y-cy, hit=(o.r+R*.9)*(o.bad?.68:1.05);
+    if (o.dead || dx*dx+dy*dy >= hit*hit) continue;
+    if (o.bad){
+      if (S.shield>0){ o.dead=true; fx(o.x,o.y,'Puff!','#fff1a0'); beep(300,.15,'triangle',.12,2); }
+      else if (S.inv<=0){
+        S.lives--; S.inv=1.8; o.dead=true; updHud(); setFace('worried',1.6);
+        fx(ocean.x,ocean.y-R,'Autsch!','#ff7a6e'); beep(180,.25,'square',.1,.5);
+        try{ navigator.vibrate && navigator.vibrate(100); }catch(e){}
+        if (S.lives<=0){ levelFail(); return; }
+      }
+    } else {
+      o.dead=true;
+      if (o.k==='herz'){ S.lives=Math.min(3,S.lives+1); fx(o.x,o.y,'+♥','#ff7a8e'); setFace('surprised',.7); beep(660,.2,'triangle',.14,1.5); }
+      else if (o.k==='boje'){ S.shield=5; setFace('determined',5); fx(o.x,o.y,'Schutz!','#fff1a0'); beep(500,.3,'triangle',.14,2); }
+      else { S.score+=o.pts; fx(o.x,o.y,'+'+o.pts,o.pts>=5?'#ffd23f':'#fff'); if(o.pts>=5) setFace('surprised',.6); beep(600+o.pts*90,.1,'sine',.13,1.4); }
+      updHud();
+    }
+  }
+  S.objs=S.objs.filter(o=>!o.dead && o.x>-o.w*1.5);
+  for (const f of S.fx){ f.t+=dt; f.y-=40*U*dt; }
+  S.fx=S.fx.filter(f=>f.t<.9);
+  $('barFill').style.width = Math.min(100, S.t/LEVEL_TIME*100)+'%';
+  if (S.t >= LEVEL_TIME) levelDone();
+}
+function fx(x,y,txt,col){ S.fx.push({x,y,txt,col,t:0}); }
+
+// ---------- Zeichnen ----------
+// Kachelt ein Bild endlos; jede zweite Kachel gespiegelt, damit die Ränder immer zusammenpassen
+function tile(name, offset, y, h){
+  if (!ok(name)) return false;
+  const im=SPR[name], w=h*im.naturalWidth/im.naturalHeight;
+  let x = -(((offset % (2*w)) + 2*w) % (2*w)), i=0;
+  for (; x < W; x += w, i++){
+    if (i%2){ ctx.save(); ctx.translate(x+w,y); ctx.scale(-1,1); ctx.drawImage(im,0,0,w+1,h); ctx.restore(); }
+    else ctx.drawImage(im,x,y,w+1,h);
+  }
+  return true;
+}
+function drawBg(){
+  const lv = S.mode==='menu' ? LEVELS[0] : L();
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,lv.top); g.addColorStop(1,lv.bot);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  tile(lv.bg, S.scroll*.18, 0, Math.max(H, W*.5));
+  // Luftblasen
+  const now=performance.now()/1000;
+  ctx.globalAlpha=.75;
+  for (const b of S.blasen){ if(!ok(b.k)) continue; const a=ASSETS[b.k], w=70*U*b.s, h=w*a[1]/a[0];
+    ctx.drawImage(SPR[b.k], b.x*W + Math.sin(now+b.p)*6*U, b.y*H, w, h); }
+  ctx.globalAlpha=1;
+  // Fische
+  for (const f of S.fish){ if(!ok(f.k)) continue; const a=ASSETS[f.k], h=f.w*a[1]/a[0];
+    ctx.drawImage(SPR[f.k], f.x, f.y + Math.sin(f.p*2)*6*U, f.w, h); }
+}
+function drawFloor(){
+  const lv = S.mode==='menu' ? LEVELS[0] : L(), fh=floorH();
+  if (!tile(lv.floor, S.scroll, H-fh, fh)){ ctx.fillStyle='#e0bd6e'; ctx.fillRect(0,H-fh*.3,W,fh*.3); }
+  // Strand am Ende von Level 4
+  if (S.mode!=='menu' && lv.beach && S.t > LEVEL_TIME-9 && ok('strand')){
+    const p=Math.min(1,(S.t-(LEVEL_TIME-9))/8), im=SPR.strand, h=H*.6, w=h*im.naturalWidth/im.naturalHeight;
+    ctx.drawImage(im, W - p*Math.max(w*.9, W), H-h, w, h);
+  }
+}
+function drawObj(o){
+  if (!ok(o.img)) return;
+  const im=SPR[o.img], w=o.w, h=o.h, t=o.ph;
+  ctx.save();
+  if (o.ground){ ctx.translate(o.x, o.y + h*.42); ctx.drawImage(im,-w/2,-h,w,h); ctx.restore(); return; }
+  ctx.translate(o.x, o.y + (o.bad ? 0 : Math.sin(t*3)*3*U));
+  switch(o.k){
+    case 'tuete':   ctx.rotate(Math.sin(t*2)*.18); ctx.scale(1+Math.sin(t*5)*.05, 1-Math.sin(t*5)*.04); break;
+    case 'netz':    ctx.rotate(Math.sin(t*1.3)*.12); break;
+    case 'flasche': ctx.rotate(-.35+Math.sin(t*.9)*.35); break;
+    case 'dose':    ctx.rotate(t*1.1); break;
+    case 'seeigel': ctx.rotate(Math.sin(t)*.15); break;
+    case 'stern':   ctx.rotate(Math.sin(t*1.5)*.35); break;
+    case 'seegras': ctx.translate(0,h*.5); ctx.rotate(Math.sin(t*2.5)*.12); ctx.translate(0,-h*.5); break;
+    case 'herz': case 'boje': {
+      const p=1+Math.sin(t*5)*.06; ctx.scale(p,p);
+      const gl=ctx.createRadialGradient(0,0,w*.2,0,0,w*.8); gl.addColorStop(0,'rgba(255,240,160,.45)'); gl.addColorStop(1,'rgba(255,240,160,0)');
+      ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,0,w*.8,0,7); ctx.fill(); break; }
+  }
+  ctx.drawImage(im,-w/2,-h/2,w,h);
+  ctx.restore();
+}
+
+function draw(){
+  drawBg();
+  drawFloor();
+  if (S.mode!=='menu'){
+    for (const o of S.objs) if (o.ground) drawObj(o);
+    for (const o of S.objs) if (!o.ground) drawObj(o);
+  }
+  const blink = S.inv>0 && Math.floor(S.inv*10)%2===0;
+  if (!blink && S.mode!=='menu'){
+    drawOcean(ctx, ocean.x, ocean.y, OR(), {flap:ocean.flap, tilt:ocean.tilt, face:S.face, shield:S.shield>0});
+  }
+  ctx.textAlign='center'; ctx.font=`800 ${24*U}px "Baloo 2", system-ui, sans-serif`;
+  for (const f of S.fx){ ctx.globalAlpha=1-f.t/.9; ctx.fillStyle=f.col; ctx.strokeStyle='rgba(19,50,74,.6)'; ctx.lineWidth=4;
+    ctx.strokeText(f.txt,f.x,f.y); ctx.fillText(f.txt,f.x,f.y); }
+  ctx.globalAlpha=1;
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if (S.mode!=='pause') update(dt);
+  draw(); drawPortraits(now/1000);
+  requestAnimationFrame(loop);
+}
+show('menu');
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
