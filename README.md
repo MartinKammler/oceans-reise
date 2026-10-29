@@ -52,7 +52,7 @@ Ocean besteht aus Einzelteilen (Körper, vier Köpfe, vordere und hintere Flosse
 
 Hintergrund und Meeresboden werden gekachelt, jede zweite Kachel gespiegelt – dadurch passen die Ränder immer zusammen. Der Hintergrund zieht langsamer vorbei als der Boden (Parallaxe).
 
-Ausnahme Heimweg: Die drei Heimweg-Bilder werden nicht gekachelt, sondern jeweils ganz gezeigt, langsam abgefahren und ineinander überblendet (Seegraswiese, Korallenbucht, Höhle als Ziel).
+Ausnahme Heimweg: Die drei Heimweg-Bilder (Seegraswiese, Korallenbucht, Höhle) werden nicht gekachelt, sondern jeweils ganz gezeigt und langsam abgefahren. Der Bildwechsel bei 40 % und 80 % der Levelzeit passiert schnell und wird von einem Blasenschwarm verdeckt. In den letzten 4,5 Sekunden übernimmt das Spiel die Steuerung: Ocean schwimmt zum Höhleneingang (`CAVE` in `index.html`), wird kleiner und verschwindet, dann erscheint „Ocean ist zu Hause!“.
 
 ## Hinweise
 

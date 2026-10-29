@@ -399,7 +399,7 @@ function startLevel(i){
   S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
   setFace('determined',1.5);
   ocean.x=ocean.tx=W*.22; ocean.y=ocean.ty=H*.5;
-  S.fish=[]; S.fishT=1; S.scroll=0; S.homeMsg=false; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
+  S.fish=[]; S.fishT=1; S.scroll=0; S.homeMsg=false; S.arrive=null; S.arriveScale=1; S.arriveAlpha=1; delete CAVE.sx; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
   S.mode='play'; show(null); beep(520,.15,'triangle',.14,1.6);
 }
 function updHud(){
@@ -597,11 +597,22 @@ function update(dt){
     return;
   }
   const lv=L(), R=OR();
+  const cur = lv.current ? Math.sin(S.t*.55)*lv.current*U : 0;   // Strömung hoch/runter
+  // Heimweg-Finale: Ocean schwimmt selbst in die Höhle
+  const ARRIVE = 4.5;
+  if (lv.home && S.t > LEVEL_TIME - ARRIVE && CAVE.sx !== undefined){
+    if (!S.arrive){ S.arrive = {x0:ocean.x, y0:ocean.y}; S.shield = 0; S.inv = 0; setFace('happy', 99); }
+    const q = Math.min(1, (S.t - (LEVEL_TIME-ARRIVE)) / ARRIVE), e = q<.5 ? 2*q*q : 1-Math.pow(-2*q+2,2)/2;
+    ocean.x = S.arrive.x0 + (CAVE.sx - S.arrive.x0)*e;
+    ocean.y = S.arrive.y0 + (CAVE.sy - S.arrive.y0)*e + Math.sin(q*Math.PI)*-30*U;
+    ocean.tx = ocean.x; ocean.ty = ocean.y; ocean.tilt *= .9;
+    S.arriveScale = 1 - .75*e; S.arriveAlpha = q > .78 ? Math.max(0, 1-(q-.78)/.2) : 1;
+  }
+  else {
   // Tastatur
   const kv=340*U*dt;
   if(keys.ArrowUp||keys.w) ocean.ty-=kv; if(keys.ArrowDown||keys.s) ocean.ty+=kv;
   if(keys.ArrowLeft||keys.a) ocean.tx-=kv; if(keys.ArrowRight||keys.d) ocean.tx+=kv;
-  const cur = lv.current ? Math.sin(S.t*.55)*lv.current*U : 0;   // Strömung hoch/runter
   ocean.ty += cur*dt;
   ocean.tx=Math.max(R*1.2,Math.min(W*.7,ocean.tx));
   ocean.ty=Math.max(R+70*U,Math.min(groundY()-R*.35,ocean.ty));
@@ -609,6 +620,7 @@ function update(dt){
   ocean.x+=(ocean.tx-ocean.x)*Math.min(1,dt*7);
   ocean.y+=(ocean.ty-ocean.y)*Math.min(1,dt*7);
   ocean.tilt += (Math.max(-.45,Math.min(.45,(ocean.y-py)/(dt*600*U))) - ocean.tilt)*Math.min(1,dt*8);
+  }
 
   if (S.inv>0) S.inv-=dt;
   if (S.shield>0) S.shield-=dt;
@@ -617,10 +629,10 @@ function update(dt){
   const ending = S.t > LEVEL_TIME - 4;   // kurz vor Schluss keine neuen Hindernisse
   S.spawnT-=dt; S.goodT-=dt;
   if (lv.wall){ S.wallT-=dt; if (S.wallT<=0 && !ending){ spawnWall(); S.wallT=lv.wall; S.spawnT=Math.max(S.spawnT,1.1); } }
-  if (lv.home && !S.homeMsg && S.t > LEVEL_TIME-7){ S.homeMsg=true; S.banner={txt:'Da vorne ist Oceans Zuhause!', t:3.5}; }
+  if (lv.home && !S.homeMsg && S.t > LEVEL_TIME-8){ S.homeMsg=true; S.banner={txt:'Da vorne ist Oceans Zuhause!', t:3.5}; }
   if (S.banner){ S.banner.t-=dt; if (S.banner.t<=0) S.banner=null; }
   if (S.spawnT<=0 && !ending){ spawnBad(); S.spawnT = lv.gap*(.7+Math.random()*.6) * (1 - Math.min(.25,S.t/240)); }
-  if (S.goodT<=0 && S.t < LEVEL_TIME-2){ spawnGood(); S.goodT=.7+Math.random()*.8; }
+  if (S.goodT<=0 && S.t < LEVEL_TIME-(lv.home ? 6 : 2)){ spawnGood(); S.goodT=.7+Math.random()*.8; }
 
   const vx=170*U*lv.speed;
   const cx=ocean.x+R*.25, cy=ocean.y-R*.05;
@@ -635,7 +647,7 @@ function update(dt){
     if (o.left){ o.y -= 120*U*dt; o.x += 60*U*dt; continue; }  // Seepferdchen schwimmt nach dem Hallo davon
     const puff = o.k==='kugelfisch' ? .78+.3*(.5+.5*Math.sin(o.ph*1.8)) : 1;
     const dx=o.x-cx, dy=o.y-cy, hit=(o.r*puff+R*.9)*(o.bad?.68:1.05);
-    if (o.dead || dx*dx+dy*dy >= hit*hit) continue;
+    if (o.dead || S.arrive || dx*dx+dy*dy >= hit*hit) continue;
     if (o.bad){
       if (S.shield>0){ o.dead=true; fx(o.x,o.y,'Puff!','#fff1a0'); beep(300,.15,'triangle',.12,2); }
       else if (S.inv<=0){
@@ -658,7 +670,7 @@ function update(dt){
   for (const f of S.fx){ f.t+=dt; f.y-=40*U*dt; }
   S.fx=S.fx.filter(f=>f.t<.9);
   $('barFill').style.width = Math.min(100, S.t/LEVEL_TIME*100)+'%';
-  if (S.t >= LEVEL_TIME) levelDone();
+  if (S.t >= LEVEL_TIME + (lv.home ? .7 : 0)) levelDone();
 }
 function fx(x,y,txt,col){ S.fx.push({x,y,txt,col,t:0}); }
 
@@ -674,9 +686,28 @@ function tile(name, offset, y, h){
   }
   return true;
 }
+const HOME_TB = () => [LEVEL_TIME*.4, LEVEL_TIME*.8];          // Zeitpunkte der Bildwechsel
+const CAVE = {img:'bg_heim3', x:1290, y:500};                   // Höhleneingang im Bild (Bildpixel)
+const curtain = Array.from({length:70}, () => ({dx:Math.random()-.5, y:Math.random()*1.1-.05, s:.6+Math.random()*1.4, k:Math.random()<.5?'blasen1':'blasen2', w:Math.random()*6}));
+function drawCurtain(T, tb){
+  for (const b of tb){
+    const q = (T - (b - .9)) / 1.8; if (q < 0 || q > 1) continue;
+    const front = W*(1.25 - 1.5*q);
+    for (const c of curtain){
+      if (!ok(c.k)) continue;
+      const a=ASSETS[c.k], w=90*U*c.s, h=w*a[1]/a[0];
+      const x = front + c.dx*W*.55 - w/2, y = c.y*H - h/2 + Math.sin(T*3+c.w)*10*U;
+      ctx.globalAlpha = .9 * (1 - Math.abs(c.dx)*1.2);
+      ctx.drawImage(SPR[c.k], x, y, w, h);
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+let coverPan = 0;
 function cover(name, pan){
   if (!ok(name)) return;
   const im=SPR[name], sc=Math.max(W/im.naturalWidth, H/im.naturalHeight)*1.06, w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+  if (name === CAVE.img){ coverPan = pan; CAVE.sx = -(w-W)*pan + CAVE.x*sc; CAVE.sy = (H-h)*.6 + CAVE.y*sc; }
   ctx.drawImage(im, -(w-W)*pan, (H-h)*.6, w, h);
 }
 function drawBg(){
@@ -685,11 +716,18 @@ function drawBg(){
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   const bh = Math.max(H, W*.5);
   if (lv.home && S.mode!=='menu'){
-    // Seegraswiese -> Korallenbucht -> Höhle; Überblenden jeweils im letzten Drittel eines Abschnitts
-    // Bilder werden ganz gezeigt (kein Kacheln) und langsam von links nach rechts abgefahren
-    const ph = Math.min(1, S.t/LEVEL_TIME) * 2.5, i = Math.min(2, Math.floor(ph)), f = Math.min(1, ph - i);
-    cover(lv.home[i], i < 2 ? f : Math.min(1, (ph-2)*2));
-    if (i < 2 && f > .65){ ctx.globalAlpha = Math.min(1,(f-.65)/.35); cover(lv.home[i+1], 0); ctx.globalAlpha = 1; }
+    // Seegraswiese -> Korallenbucht -> Höhle. Bilder werden ganz gezeigt (kein Kacheln) und langsam abgefahren.
+    // Der Bildwechsel passiert schnell, verdeckt von einem Blasenschwarm (drawCurtain).
+    const T = S.t, tb = HOME_TB();
+    const i = T < tb[0] ? 0 : T < tb[1] ? 1 : 2;
+    const pan = i===0 ? T/tb[0] : i===1 ? (T-tb[0])/(tb[1]-tb[0]) : Math.min(1, (T-tb[1])/(LEVEL_TIME*.1));
+    let swapped = false;
+    for (let k=0; k<2; k++){
+      const d = T - tb[k];
+      if (Math.abs(d) < .3){ cover(lv.home[k], 1); ctx.globalAlpha = (d+.3)/.6; cover(lv.home[k+1], 0); ctx.globalAlpha = 1; swapped = true; }
+    }
+    if (!swapped) cover(lv.home[i], Math.max(0, Math.min(1, pan)));
+    drawCurtain(T, tb);
   } else tile(lv.bg, S.scroll*.18, 0, bh);
   ctx.fillStyle = lv.dark ? 'rgba(0,10,30,.12)' : 'rgba(40,120,170,.16)'; ctx.fillRect(0,0,W,H);   // Dunst: Hintergrund tritt zurück
   // Luftblasen
@@ -773,7 +811,9 @@ function draw(){
   }
   const blink = S.inv>0 && Math.floor(S.inv*10)%2===0;
   if (!blink && S.mode!=='menu'){
-    drawOcean(ctx, ocean.x, ocean.y, OR(), {flap:ocean.flap, tilt:ocean.tilt, face:S.face, shield:S.shield>0});
+    ctx.globalAlpha = S.arriveAlpha ?? 1;
+    drawOcean(ctx, ocean.x, ocean.y, OR()*(S.arriveScale ?? 1), {flap:ocean.flap, tilt:ocean.tilt, face:S.face, shield:S.shield>0});
+    ctx.globalAlpha = 1;
   }
   if (S.mode!=='menu' && L().dark){
     const g=ctx.createRadialGradient(ocean.x+OR()*.3, ocean.y, 110*U, ocean.x+OR()*.3, ocean.y, 330*U);
