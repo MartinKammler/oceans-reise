@@ -24,7 +24,7 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 | 7. Tiefsee | dunkel, viele Quallen, Schatz am Grund | Anglerfische, Seeigel, Felsen, Netz |
 | 8. Müllstrudel | Steg im trüben Wasser, Müllwände mit einer Lücke | Wände aus Tüten, Flaschen, Dosen, Anker |
 | 9. Wilde See | Wellen, starke Strömung | fast alles, viele Angelhaken |
-| 10. Heimweg | Seegraswiese → Korallenbucht → Oceans Höhle, Müllwände | fast alles |
+| 10. Heimweg | Müllwände, am Ende fährt Oceans Zuhause mit dem Höhlenbogen ins Bild | fast alles |
 
 **Goodies:** Seegras +1, Qualle +2, Krabbe +2, Muschel +3, Seepferdchen +4 (sagt Hallo und schwimmt weiter), Seestern +5, Schatztruhe +10, Herz (Leben zurück), Rettungsgeräte (Rettungsring, Rettungsboje, Gurtretter: 5 Sekunden Schutzschild, der Name wird beim Einsammeln angezeigt)
 
@@ -52,7 +52,7 @@ Ocean besteht aus Einzelteilen (Körper, vier Köpfe, vordere und hintere Flosse
 
 Hintergrund und Meeresboden werden gekachelt, jede zweite Kachel gespiegelt – dadurch passen die Ränder immer zusammen. Der Hintergrund zieht langsamer vorbei als der Boden (Parallaxe).
 
-Ausnahme Heimweg: Die drei Heimweg-Bilder (Seegraswiese, Korallenbucht, Höhle) werden nicht gekachelt, sondern jeweils ganz gezeigt und langsam abgefahren. Der Bildwechsel bei 40 % und 80 % der Levelzeit passiert schnell und wird von einem Blasenschwarm verdeckt. In den letzten 4,5 Sekunden übernimmt das Spiel die Steuerung: Ocean schwimmt zum Höhleneingang (`CAVE` in `index.html`), wird kleiner und verschwindet, dann erscheint „Ocean ist zu Hause!“.
+Heimweg-Finale: Gegen Ende fährt der Zuhause-Boden mit dem Höhlenbogen (`img/zuhause.webp`) von rechts ins Bild und bleibt am rechten Rand stehen, Hintergrund und Boden halten an. Dann übernimmt das Spiel die Steuerung: Ocean schwimmt in die Bogenöffnung (`HOME` in `index.html`), wird kleiner und verschwindet, danach erscheint „Ocean ist zu Hause!“.
 
 ## Hinweise
 
