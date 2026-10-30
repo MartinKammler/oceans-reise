@@ -123,7 +123,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <p>Hilf Ocean, sicher durchs Meer nach Hause zu schwimmen. Sammle Leckeres und weiche dem Müll aus!</p>
       <div class="legend">
         <div>Seegras +1</div><div>Qualle, Krabbe +2</div>
-        <div>Muschel +3</div><div>Seepferdchen +4</div>
+        <div>Muschel +3</div><div>Freunde sagen Hallo +4</div>
         <div>Seestern +5</div><div>Schatztruhe +10</div><div>Herz: Leben zurück</div>
         <div>Rettungsgeräte: Schutzschild</div><div class="bad" style="grid-column:1/-1">Müll, Steine, Haken &amp; stachelige Tiere: ausweichen!</div>
       </div>
@@ -260,7 +260,7 @@ const LEVELS = [
   {name:'Lagune', sub:'ruhig und flach', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.85, gap:2.0, fish:5,
    bads:['fels','seeigel'], stars:[25,50], intro:'Sammle Seegras, Muscheln und Seesterne!'},
   {name:'Seegraswiese', sub:'viel zu futtern', bg:'bg_offen', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.9, gap:1.8, fish:4,
-   bads:['seeigel','fels','tuete','kugelfisch','strohhalm'], goods:{seegras:9,krabbe:3,muschel:2,stern:1,seepferd:.6,qualle:1}, stars:[30,55], intro:'Hier wächst viel Seegras. Friss dich satt!'},
+   bads:['seeigel','fels','tuete','kugelfisch','strohhalm'], goods:{seegras:9,krabbe:3,muschel:2,stern:1,seepferd:.6,qualle:1,robbe:.4,krake:.4}, stars:[30,55], intro:'Hier wächst viel Seegras. Friss dich satt!'},
   {name:'Korallenriff', sub:'bunt und stachelig', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3,
    bads:['seeigel','fels','tuete','kugelfisch','becher','strohhalm'], stars:[30,60], intro:'Vorsicht vor den stacheligen Seeigeln!'},
   {name:'Strömung', sub:'eisig und strömend', bg:'bg_eis', floor:'boden_lagune', gf:.70, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3, current:70,
@@ -270,7 +270,7 @@ const LEVELS = [
   {name:'Geisternetze', sub:'das alte Wrack', bg:'bg_wrack', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:1.5, fish:8, bigNets:true,
    bads:['netz','netz','netz','dose','reifen','anker','sixpack','kanister'], stars:[30,60], intro:'Alte Fischernetze treiben im Wasser. Nicht verfangen!'},
   {name:'Tiefsee', sub:'dunkel und still', bg:'bg_tief', floor:'boden_tief', gf:.70, top:'#1b4a7a', bot:'#061a33', speed:.95, gap:1.6, fish:6, dark:true,
-   bads:['angler','angler','seeigel','fels','netz','kanister'], goods:{seegras:2,qualle:7,muschel:2,stern:1.2,schatz:.6}, stars:[30,55], intro:'Hier unten ist es dunkel. Ocean sieht nur, was nah ist.'},
+   bads:['angler','angler','seeigel','fels','netz','kanister'], goods:{seegras:2,qualle:7,muschel:2,stern:1.2,schatz:.6,krake:.6,wal:.4}, stars:[30,55], intro:'Hier unten ist es dunkel. Ocean sieht nur, was nah ist.'},
   {name:'Müllstrudel', sub:'such die Lücke', bg:'bg_steg', floor:'boden_hafen2', gf:.70, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:2.4, fish:9, wall:3.4,
    bads:['tuete','dose','reifen','eimer','anker','becher','kanister','plastik','sixpack'], stars:[30,60], intro:'Ganze Müllwände! Such die Lücke.'},
   {name:'Wilde See', sub:'schnell und wild', bg:'bg_wild', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.2, gap:1.35, fish:3, current:90,
@@ -377,14 +377,14 @@ const OR = () => 34*U;
 const BG_FISH = ['fisch3','fisch_makrele','fisch_papagei','fisch_falter','fisch_rot','fisch_pink'];
 const BG_SWARMS = ['schwarm_blau','schwarm_gelb','schwarm_sardine'];
 // Grafiken aus den Asset-Paketen
-const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497], "seepferd": [152, 256], "schatz": [256, 247], "kugelfisch": [256, 212], "angler": [256, 194], "krabbe": [256, 197], "qualle": [218, 256], "anker": [194, 419], "haken": [103, 420], "bg_tief": [1774, 887], "bg_wild": [1774, 887], "boden_tief": [1520, 492], "boden_hafen2": [1520, 490], "torpedo": [256, 109], "gurtretter": [256, 97], "m_dose1": [135, 220], "m_dose2": [138, 217], "m_dose3": [142, 220], "m_dose4": [137, 208], "m_dose5": [146, 220], "m_dose6": [153, 203], "m_dose7": [133, 220], "m_flasche1": [95, 220], "m_flasche2": [115, 220], "m_flasche3": [124, 220], "m_flasche4": [113, 220], "m_flasche5": [220, 104], "m_flasche6": [220, 111], "m_flasche7": [220, 132], "m_netz1": [220, 126], "m_becher1": [117, 220], "m_becher2": [125, 220], "m_becher3": [117, 220], "m_becher4": [220, 187], "m_strohhalm1": [178, 200], "m_strohhalm2": [118, 220], "m_sixpack1": [220, 165], "m_kanister1": [183, 220], "m_kanister2": [141, 220], "m_kanister3": [163, 220], "m_kanister4": [174, 220], "m_plastik1": [218, 176], "m_plastik2": [220, 180], "m_plastik3": [220, 187], "m_tuete1": [204, 240], "m_tuete2": [214, 240], "m_tuete3": [220, 240], "m_tuete4": [237, 240], "m_tuete5": [228, 240], "fisch_makrele": [220, 100], "fisch_papagei": [220, 155], "fisch_falter": [220, 172], "schwarm_blau": [420, 252], "fisch_rot": [220, 154], "fisch_pink": [220, 162], "schwarm_gelb": [420, 209], "schwarm_sardine": [420, 237]};
+const ASSETS = {"tuete": [214, 255], "flasche": [165, 256], "dose": [220, 255], "netz": [197, 256], "seeigel": [252, 255], "seegras": [184, 256], "muschel": [256, 250], "stern": [248, 256], "herz": [234, 256], "boje": [237, 256], "fels1": [384, 281], "fels2": [384, 261], "fels3": [384, 265], "eimer": [384, 288], "reifen": [384, 235], "fisch3": [200, 161], "blasen1": [200, 177], "blasen2": [220, 133], "bg_hell": [1774, 887], "bg_riff": [1774, 887], "bg_hafen": [1774, 887], "boden_lagune": [1520, 451], "boden_riff": [1520, 420], "boden_hafen": [1520, 492], "boden_mix": [1520, 457], "strand": [1520, 497], "seepferd": [152, 256], "schatz": [256, 247], "kugelfisch": [256, 212], "angler": [256, 194], "krabbe": [256, 197], "qualle": [218, 256], "anker": [194, 419], "haken": [103, 420], "bg_tief": [1774, 887], "bg_wild": [1774, 887], "boden_tief": [1520, 492], "boden_hafen2": [1520, 490], "torpedo": [256, 109], "gurtretter": [256, 97], "m_dose1": [135, 220], "m_dose2": [138, 217], "m_dose3": [142, 220], "m_dose4": [137, 208], "m_dose5": [146, 220], "m_dose6": [153, 203], "m_dose7": [133, 220], "m_flasche1": [95, 220], "m_flasche2": [115, 220], "m_flasche3": [124, 220], "m_flasche4": [113, 220], "m_flasche5": [220, 104], "m_flasche6": [220, 111], "m_flasche7": [220, 132], "m_netz1": [220, 126], "m_becher1": [117, 220], "m_becher2": [125, 220], "m_becher3": [117, 220], "m_becher4": [220, 187], "m_strohhalm1": [178, 200], "m_strohhalm2": [118, 220], "m_sixpack1": [220, 165], "m_kanister1": [183, 220], "m_kanister2": [141, 220], "m_kanister3": [163, 220], "m_kanister4": [174, 220], "m_plastik1": [218, 176], "m_plastik2": [220, 180], "m_plastik3": [220, 187], "m_tuete1": [204, 240], "m_tuete2": [214, 240], "m_tuete3": [220, 240], "m_tuete4": [237, 240], "m_tuete5": [228, 240], "fisch_makrele": [220, 100], "fisch_papagei": [220, 155], "fisch_falter": [220, 172], "schwarm_blau": [420, 252], "fisch_rot": [220, 154], "fisch_pink": [220, 162], "schwarm_gelb": [420, 209], "schwarm_sardine": [420, 237], "wal": [300, 231], "krake": [256, 214], "robbe": [256, 216]};
 const TILE = {"anker": 51, "haken": 10};
 const SPR = {};
 for (const k in ASSETS){ const im = new Image(); im.src = 'img/' + k + (k.startsWith('bg_') ? '.jpg' : '.webp'); SPR[k] = im; }
 const ok = k => SPR[k] && SPR[k].complete && SPR[k].naturalWidth > 0;
 // Anzeigegröße (längste Seite in px bei U=1) und Bodenobjekte
 const SIZE = {tuete:66, flasche:64, dose:52, netz:104, seeigel:56, seegras:54, muschel:50, stern:52, herz:56, boje:60, torpedo:86, gurtretter:92, becher:60, strohhalm:58, sixpack:68, kanister:66, plastik:64, fels:124, eimer:100, reifen:112,
-  qualle:62, krabbe:54, schatz:70, seepferd:74, kugelfisch:66, angler:88, anker:72, haken:48};
+  qualle:62, krabbe:54, schatz:70, seepferd:74, wal:150, krake:88, robbe:92, kugelfisch:66, angler:88, anker:72, haken:48};
 const GROUND = {fels:1, eimer:1, reifen:1, krabbe:1, schatz:1};
 const HANG = {anker:1, haken:1};
 // Bildvarianten je Hindernis-Art: es wird zufällig eine gewählt
@@ -537,7 +537,9 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => keys[e.key]=false);
 
 // ---------- Objekte ----------
-const GOODS=[{k:'seegras',pts:1,w:6},{k:'qualle',pts:2,w:2.5},{k:'krabbe',pts:2,w:1.6},{k:'muschel',pts:3,w:3},{k:'seepferd',pts:4,w:.7},{k:'stern',pts:5,w:1.2},{k:'schatz',pts:10,w:.3}];
+// Freunde werden nicht gefressen, sondern grüßen und schwimmen weiter
+const FRIENDS = {seepferd:'Hallo!', krake:'Hallihallo!', robbe:'Hi Ocean!', wal:'Huhu, Ocean!'};
+const GOODS=[{k:'seegras',pts:1,w:6},{k:'qualle',pts:2,w:2.5},{k:'krabbe',pts:2,w:1.6},{k:'muschel',pts:3,w:3},{k:'seepferd',pts:4,w:.6},{k:'krake',pts:4,w:.45},{k:'robbe',pts:4,w:.45},{k:'wal',pts:6,w:.3},{k:'stern',pts:5,w:1.2},{k:'schatz',pts:10,w:.3}];
 function spawnHang(k){
   const a=ASSETS[k], w=SIZE[k]*U, sc=w/a[0], h=a[1]*sc;
   const bottom = H*.36 + Math.random()*Math.max(10, groundY()-110*U-H*.36);
@@ -578,7 +580,7 @@ function spawnGood(){
   const a = ASSETS[k], d = SIZE[k]*U, sc = d/Math.max(a[0],a[1]);
   const w=a[0]*sc, h=a[1]*sc, ground=!!GROUND[k];
   const y = ground ? groundY() - h*.36 : H*.18+Math.random()*(groundY()-60*U-H*.18);
-  S.objs.push({bad:false,k,img:k,pts,w,h,ground,friend:k==='seepferd',x:W+d,y,r:d*.45,ph:Math.random()*6});
+  S.objs.push({bad:false,k,img:k,pts,w,h,ground,friend:!!FRIENDS[k],x:W+d,y,r:d*.45,ph:Math.random()*6});
 }
 
 // ---------- Update ----------
@@ -654,7 +656,8 @@ function update(dt){
     if (o.k==='angler') o.x -= 55*U*dt;                         // schwimmt Ocean entgegen
     if (o.k==='krabbe') o.x += Math.sin(o.ph*2.2)*40*U*dt;       // krabbelt hin und her
     if (o.k==='qualle') o.y += Math.sin(o.ph*1.6)*22*U*dt;
-    if (o.k==='seepferd' && !o.left) o.y += Math.sin(o.ph*1.4)*24*U*dt;
+    if (o.friend && !o.left) o.y += Math.sin(o.ph*(o.k==='wal' ? .8 : 1.4))*24*U*dt;
+    if (o.k==='wal' && !o.left) o.x -= 20*U*dt;   // der Wal schwimmt gemütlich entgegen
     if (o.left){ o.y -= 120*U*dt; o.x += 60*U*dt; continue; }  // Seepferdchen schwimmt nach dem Hallo davon
     const puff = o.k==='kugelfisch' ? .78+.3*(.5+.5*Math.sin(o.ph*1.8)) : 1;
     const dx=o.x-cx, dy=o.y-cy, hit=(o.r*puff+R*.9)*(o.bad?.68:1.05);
@@ -668,7 +671,7 @@ function update(dt){
         if (S.lives<=0){ levelFail(); return; }
       }
     } else {
-      if (o.friend){ o.left=true; S.score+=o.pts; fx(o.x,o.y-o.h*.5,'Hallo! +'+o.pts,'#ffd23f'); setFace('surprised',.7);
+      if (o.friend){ o.left=true; S.score+=o.pts; fx(o.x,o.y-o.h*.5,FRIENDS[o.k]+' +'+o.pts,'#ffd23f'); setFace('surprised',.7);
         beep(700,.12,'sine',.13,1.3); setTimeout(()=>beep(900,.15,'sine',.12,1.2),120); updHud(); continue; }
       o.dead=true;
       if (o.k==='herz'){ S.lives=Math.min(3,S.lives+1); fx(o.x,o.y,'+♥','#ff7a8e'); setFace('surprised',.7); beep(660,.2,'triangle',.14,1.5); }
@@ -767,6 +770,9 @@ function drawObj(o){
     case 'stern':   ctx.rotate(Math.sin(t*1.5)*.35); break;
     case 'qualle':  ctx.scale(1+Math.sin(t*3)*.06, 1-Math.sin(t*3)*.08); break;
     case 'seepferd': ctx.rotate(Math.sin(t*1.4)*.08); if (o.left) ctx.rotate(-.3); break;
+    case 'wal':   ctx.rotate(Math.sin(t*.9)*.06); if (o.left) ctx.rotate(-.2); break;
+    case 'krake': ctx.scale(1+Math.sin(t*2.2)*.04, 1-Math.sin(t*2.2)*.05); if (o.left) ctx.rotate(.15); break;
+    case 'robbe': ctx.rotate(Math.sin(t*1.6)*.1); if (o.left) ctx.rotate(-.3); break;
     case 'kugelfisch': { const p=.78+.3*(.5+.5*Math.sin(t*1.8)); ctx.scale(p,p); break; }
     case 'angler':  ctx.rotate(Math.sin(t*2)*.06); break;
     case 'seegras': ctx.translate(0,h*.5); ctx.rotate(Math.sin(t*2.5)*.12); ctx.translate(0,-h*.5); break;
