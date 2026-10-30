@@ -1,0 +1,20 @@
+{
+  "name": "Oceans Reise",
+  "short_name": "Oceans Reise",
+  "description": "Ein Ausweichspiel für Kinder: Hilf der kleinen Schildkröte Ocean, sicher durchs Meer nach Hause zu schwimmen. Von Martin Kammler.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#0f4a6e",
+  "theme_color": "#1f8fb0",
+  "categories": ["games", "kids", "education"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

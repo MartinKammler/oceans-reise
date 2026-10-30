@@ -1,13 +1,29 @@
-# Ocean im Meer
+# Oceans Reise
+
+*by Martin Kammler*
 
 Ein Ausweichspiel für Kinder (6–9 Jahre): Die kleine Schildkröte Ocean schwimmt durchs Meer nach Hause, sammelt Leckeres ein und weicht Müll und Hindernissen aus. Nach jedem Level wird eine Baderegel angezeigt, der Reihe nach alle elf.
 
 ## Spielen
 
-`index.html` im Browser öffnen. Läuft ohne Installation auf Tablet, Handy und PC.
+**Online spielen:** https://martinkammler.github.io/oceans-reise/
+
+Läuft im Browser auf Tablet, Handy und PC, auch offline.
 
 - **Steuerung:** Finger oder Maus bewegen (Ocean folgt), oder Pfeiltasten / WASD
 - **Pause:** Pause-Knopf, Leertaste oder Esc
+
+### Als App installieren
+
+- **Android / Chrome:** Seite öffnen, im Menü „App installieren“ bzw. „Zum Startbildschirm hinzufügen“
+- **iPad / iPhone (Safari):** Teilen-Knopf → „Zum Home-Bildschirm“
+- **PC (Chrome/Edge):** Installieren-Symbol in der Adressleiste
+
+Nach der Installation läuft das Spiel im Vollbild und ohne Internet.
+
+### Updates
+
+Die App sucht beim Öffnen und alle 30 Minuten nach einer neuen Version. Ist eine da, wird sie im Hintergrund geladen und aktiviert, sobald das Startmenü angezeigt wird. Ein laufendes Level wird nie unterbrochen. Die aktuelle Version steht unten im Startmenü.
 
 ## Spielablauf
 
@@ -41,10 +57,23 @@ Zehn Level à 60 Sekunden, jedes mit eigenem Hintergrund, Meeresboden und einem 
 ## Aufbau
 
 - `index.html` – das komplette Spiel (HTML, CSS, JavaScript in einer Datei)
-- `img/` – aufbereitete Spielgrafiken (zugeschnitten, verkleinert, WebP/JPG)
-- `quellgrafiken/original/` – die Originalgrafiken in voller Größe (breite 3:1-Hintergründe in `hintergruende/breit/`)
+- `manifest.webmanifest`, `icons/` – App-Name, Icons und Darstellung für die Installation
+- `sw.js` – Service Worker: Offline-Cache und automatische Updates (wird erzeugt, nicht von Hand ändern)
+- `img/` – aufbereitete Spielgrafiken (zugeschnitten, verkleinert, WebP/JPG/PNG)
+- `quellgrafiken/original/` – die Originalgrafiken in voller Größe
 - `quellgrafiken/rig.json` – Gelenkpunkte, mit denen Ocean aus Körper, Kopf und Flossen zusammengesetzt wird
-- `quellgrafiken/assets.json` – Größen der Spielgrafiken und Kachelhöhe von Ankerkette und Angelschnur (auch in `index.html` eingebettet)
+- `quellgrafiken/assets.json` – Größen der Spielgrafiken (auch in `index.html` eingebettet)
+- `tools/release.py`, `tools/sw.template.js` – neue Version erstellen
+- `CHANGELOG.md` – Änderungen je Version
+
+### Neue Version veröffentlichen
+
+```bash
+python3 tools/release.py 1.1.0 "Was sich geändert hat"
+git commit -am "Version 1.1.0" && git push
+```
+
+Das Skript setzt die Versionsnummer in `index.html`, erzeugt `sw.js` mit der neuen Version und der aktuellen Dateiliste und ergänzt `CHANGELOG.md`. Installierte Apps holen sich die neue Version dann automatisch. Versionsnummern nach dem Schema *Major.Minor.Patch* (z. B. 1.1.0 für neue Inhalte, 1.0.1 für Fehlerbehebungen).
 
 ### Ocean-Animation
 
@@ -56,7 +85,8 @@ Hintergrund und Meeresboden werden gekachelt, jede zweite Kachel gespiegelt – 
 
 Heimweg-Finale: Gegen Ende fährt der Zuhause-Boden mit dem Höhlenbogen (`img/zuhause.webp`) von rechts ins Bild und bleibt am rechten Rand stehen, Hintergrund und Boden halten an. Dann übernimmt das Spiel die Steuerung: Ocean schwimmt in die Bogenöffnung (`HOME` in `index.html`), wird kleiner und verschwindet, danach erscheint „Ocean ist zu Hause!“.
 
-## Hinweise
+## Lizenz und Credits
 
-- Der Schriftzug auf dem Panzerring wurde für die generische Version aus den Grafiken entfernt. Die Originale mit Schriftzug liegen in `quellgrafiken/original/ocean/`.
-- Die Baderegeln-Texte stammen von Martin und werden wörtlich angezeigt.
+Spiel, Idee und Grafiken: **Martin Kammler**. Veröffentlicht unter der [MIT-Lizenz](LICENSE).
+
+Die Baderegeln-Texte stammen von Martin Kammler und werden wörtlich angezeigt.

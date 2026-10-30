@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ocean im Meer</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>Oceans Reise</title>
+<meta name="description" content="Oceans Reise: Ein Ausweichspiel für Kinder. Hilf der kleinen Schildkröte Ocean, sicher durchs Meer nach Hause zu schwimmen. Von Martin Kammler.">
+<meta name="author" content="Martin Kammler">
+<meta name="theme-color" content="#1f8fb0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Oceans Reise">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
 <style>
@@ -96,11 +104,15 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .hs-list li.me{background:#fff1a8;outline:3px solid var(--sun)}
 .hs-list li.empty{opacity:.45;font-weight:500}
 @media (max-height:620px){ #menu .card > p:not(.small){display:none} #menu .card{gap:8px} }
+.credits{font-size:13px !important;opacity:.6;margin-top:-2px !important}
+.toast{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--paper);color:var(--ink);
+  border-radius:999px;padding:8px 18px;font-weight:700;font-size:15px;box-shadow:0 4px 0 rgba(10,40,60,.3);white-space:nowrap;max-width:calc(100% - 32px);z-index:5}
 </style>
 
 </head>
 <body>
 <div id="wrap">
+  <div class="toast" id="toast" hidden></div>
   <canvas id="c" aria-label="Spielfläche: Ocean schwimmt im Meer"></canvas>
 
   <div class="hud" id="hud" hidden>
@@ -119,7 +131,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
   <div class="overlay" id="menu">
     <div class="card">
       <canvas class="portrait" data-pose="wave"></canvas>
-      <h1>Ocean im Meer</h1>
+      <h1>Oceans Reise</h1>
       <p>Hilf Ocean, sicher durchs Meer nach Hause zu schwimmen. Sammle Leckeres und weiche dem Müll aus!</p>
       <div class="legend">
         <div>Seegras +1</div><div>Qualle, Krabbe +2</div>
@@ -135,6 +147,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
         <button class="play alt" id="btnRules">Baderegeln</button>
         <button class="play alt" id="btnScores">Bestenliste</button>
       </div>
+      <p class="credits">by Martin Kammler · <span id="appVersion"></span></p>
     </div>
   </div>
 
@@ -845,6 +858,34 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 show('menu');
+
+// ---------- Version und automatisches Update (PWA) ----------
+const APP_VERSION = '1.0.0';
+$('appVersion').textContent = 'Version ' + APP_VERSION;
+function toast(msg, ms = 3500){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, ms); }
+try { if (sessionStorage.getItem('ocean-updated')) { sessionStorage.removeItem('ocean-updated'); toast('Aktualisiert auf Version ' + APP_VERSION); } } catch(e){}
+let waitingSW = null, reloading = false;
+function applyUpdate(){
+  // nur im Startmenü neu laden, damit kein laufendes Level oder eine Namenseingabe verloren geht
+  if (!waitingSW || S.mode !== 'menu') return;
+  try { sessionStorage.setItem('ocean-updated', '1'); } catch(e){}
+  waitingSW.postMessage({type: 'SKIP_WAITING'}); waitingSW = null;
+}
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(reg => {
+    const watch = sw => sw && sw.addEventListener('statechange', () => {
+      if (sw.state === 'installed' && navigator.serviceWorker.controller){ waitingSW = sw; applyUpdate(); }
+    });
+    if (reg.waiting && navigator.serviceWorker.controller){ waitingSW = reg.waiting; applyUpdate(); }
+    watch(reg.installing);
+    reg.addEventListener('updatefound', () => watch(reg.installing));
+    // beim Zurückkehren zur App und alle 30 Minuten nach Updates schauen
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+    setInterval(() => reg.update().catch(() => {}), 30*60*1000);
+  }).catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloading){ reloading = true; location.reload(); } });
+  setInterval(applyUpdate, 1000);
+}
 requestAnimationFrame(loop);
 })();
 </script>
