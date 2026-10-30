@@ -123,7 +123,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <p>Hilf Ocean, sicher durchs Meer nach Hause zu schwimmen. Sammle Leckeres und weiche dem Müll aus!</p>
       <div class="legend">
         <div>Seegras +1</div><div>Qualle, Krabbe +2</div>
-        <div>Muschel +3</div><div>Freunde sagen Hallo +4</div>
+        <div>Muschel +3</div><div>Freunde sagen Hallo +10</div>
         <div>Seestern +5</div><div>Schatztruhe +10</div><div>Herz: Leben zurück</div>
         <div>Rettungsgeräte: Schutzschild</div><div class="bad" style="grid-column:1/-1">Müll, Steine, Haken &amp; stachelige Tiere: ausweichen!</div>
       </div>
@@ -260,7 +260,7 @@ const LEVELS = [
   {name:'Lagune', sub:'ruhig und flach', bg:'bg_hell', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.85, gap:2.0, fish:5,
    bads:['fels','seeigel'], stars:[25,50], intro:'Sammle Seegras, Muscheln und Seesterne!'},
   {name:'Seegraswiese', sub:'viel zu futtern', bg:'bg_offen', floor:'boden_lagune', gf:.70, top:'#8ae6e8', bot:'#12627e', speed:.9, gap:1.8, fish:4,
-   bads:['seeigel','fels','tuete','kugelfisch','strohhalm'], goods:{seegras:9,krabbe:3,muschel:2,stern:1,seepferd:.6,qualle:1,robbe:.4,krake:.4}, stars:[30,55], intro:'Hier wächst viel Seegras. Friss dich satt!'},
+   bads:['seeigel','fels','tuete','kugelfisch','strohhalm'], goods:{seegras:9,krabbe:3,muschel:2,stern:1,qualle:1}, stars:[30,55], intro:'Hier wächst viel Seegras. Friss dich satt!'},
   {name:'Korallenriff', sub:'bunt und stachelig', bg:'bg_riff', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3,
    bads:['seeigel','fels','tuete','kugelfisch','becher','strohhalm'], stars:[30,60], intro:'Vorsicht vor den stacheligen Seeigeln!'},
   {name:'Strömung', sub:'eisig und strömend', bg:'bg_eis', floor:'boden_lagune', gf:.70, top:'#7fd8ee', bot:'#173f73', speed:1.0, gap:1.6, fish:3, current:70,
@@ -270,7 +270,7 @@ const LEVELS = [
   {name:'Geisternetze', sub:'das alte Wrack', bg:'bg_wrack', floor:'boden_hafen', gf:.62, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:1.5, fish:8, bigNets:true,
    bads:['netz','netz','netz','dose','reifen','anker','sixpack','kanister'], stars:[30,60], intro:'Alte Fischernetze treiben im Wasser. Nicht verfangen!'},
   {name:'Tiefsee', sub:'dunkel und still', bg:'bg_tief', floor:'boden_tief', gf:.70, top:'#1b4a7a', bot:'#061a33', speed:.95, gap:1.6, fish:6, dark:true,
-   bads:['angler','angler','seeigel','fels','netz','kanister'], goods:{seegras:2,qualle:7,muschel:2,stern:1.2,schatz:.6,krake:.6,wal:.4}, stars:[30,55], intro:'Hier unten ist es dunkel. Ocean sieht nur, was nah ist.'},
+   bads:['angler','angler','seeigel','fels','netz','kanister'], goods:{seegras:2,qualle:7,muschel:2,stern:1.2,schatz:.6}, stars:[30,55], intro:'Hier unten ist es dunkel. Ocean sieht nur, was nah ist.'},
   {name:'Müllstrudel', sub:'such die Lücke', bg:'bg_steg', floor:'boden_hafen2', gf:.70, top:'#9fc3cc', bot:'#1d3f52', speed:1.05, gap:2.4, fish:9, wall:3.4,
    bads:['tuete','dose','reifen','eimer','anker','becher','kanister','plastik','sixpack'], stars:[30,60], intro:'Ganze Müllwände! Such die Lücke.'},
   {name:'Wilde See', sub:'schnell und wild', bg:'bg_wild', floor:'boden_riff', gf:.62, top:'#7fd8ee', bot:'#173f73', speed:1.2, gap:1.35, fish:3, current:90,
@@ -367,7 +367,7 @@ function drawPortraits(t){
 }
 
 // ---------- Spielzustand ----------
-const S = {mode:'menu', lvl:0, t:0, score:0, lives:3, inv:0, shield:0, spawnT:0, goodT:0, faceT:0, face:'happy', objs:[], fx:[], fish:[], blasen:[], fishT:2, scroll:0, wallT:0, banner:null, streaks:[]};
+const S = {friends:[], mode:'menu', lvl:0, t:0, score:0, lives:3, inv:0, shield:0, spawnT:0, goodT:0, faceT:0, face:'happy', objs:[], fx:[], fish:[], blasen:[], fishT:2, scroll:0, wallT:0, banner:null, streaks:[]};
 const ocean = {x:0,y:0,tx:0,ty:0,tilt:0,flap:0};
 const keys = {};
 const L = () => LEVELS[S.lvl];
@@ -403,7 +403,7 @@ function startLevel(i){
   S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
   setFace('determined',1.5);
   ocean.x=ocean.tx=W*.22; ocean.y=ocean.ty=H*.5;
-  S.fish=[]; S.fishT=1; S.scroll=0; S.homeMsg=false; S.arrive=null; S.arriveScale=1; S.arriveAlpha=1; S.homeOff=null; S.homeStop=false; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
+  S.fish=[]; S.fishT=1; S.scroll=0; S.homeMsg=false; planFriends(); S.arrive=null; S.arriveScale=1; S.arriveAlpha=1; S.homeOff=null; S.homeStop=false; S.wallT=(L().wall||0)*.6; S.banner={txt:L().intro,t:3.4}; $('lvlName').textContent = L().name; updHud();
   S.mode='play'; show(null); beep(520,.15,'triangle',.14,1.6);
 }
 function updHud(){
@@ -539,7 +539,17 @@ addEventListener('keyup', e => keys[e.key]=false);
 // ---------- Objekte ----------
 // Freunde werden nicht gefressen, sondern grüßen und schwimmen weiter
 const FRIENDS = {seepferd:'Hallo!', krake:'Hallihallo!', robbe:'Hi Ocean!', wal:'Huhu, Ocean!'};
-const GOODS=[{k:'seegras',pts:1,w:6},{k:'qualle',pts:2,w:2.5},{k:'krabbe',pts:2,w:1.6},{k:'muschel',pts:3,w:3},{k:'seepferd',pts:4,w:.6},{k:'krake',pts:4,w:.45},{k:'robbe',pts:4,w:.45},{k:'wal',pts:6,w:.3},{k:'stern',pts:5,w:1.2},{k:'schatz',pts:10,w:.3}];
+const FRIEND_PTS = {seepferd:10, krake:10, robbe:10, wal:15};
+// Pro Level kommen nur 1–2 Freunde vorbei, zu zufälligen Zeiten
+function planFriends(){
+  const n = Math.random() < .5 ? 1 : 2, keys = Object.keys(FRIENDS).sort(() => Math.random() - .5);
+  S.friends = [];
+  for (let i = 0; i < n; i++){
+    const lo = 8 + i*(LEVEL_TIME-22)/n, hi = 8 + (i+1)*(LEVEL_TIME-22)/n;   // Zeitfenster, damit sie nicht gleichzeitig kommen
+    S.friends.push({k: keys[i], t: lo + Math.random()*(hi-lo)});
+  }
+}
+const GOODS=[{k:'seegras',pts:1,w:6},{k:'qualle',pts:2,w:2.5},{k:'krabbe',pts:2,w:1.6},{k:'muschel',pts:3,w:3},{k:'stern',pts:5,w:1.2},{k:'schatz',pts:10,w:.3}];
 function spawnHang(k){
   const a=ASSETS[k], w=SIZE[k]*U, sc=w/a[0], h=a[1]*sc;
   const bottom = H*.36 + Math.random()*Math.max(10, groundY()-110*U-H*.36);
@@ -570,12 +580,13 @@ function spawnWall(){
 // Rettungsgeräte als Schutzschild (Name wird beim Einsammeln angezeigt)
 const SHIELDS = ['boje','torpedo','gurtretter'];
 const SHIELD_NAME = {boje:'Rettungsring!', torpedo:'Rettungsboje!', gurtretter:'Gurtretter!'};
-function spawnGood(){
+function spawnGood(kForce){
   const gw=L().goods, list=GOODS.map(g=>({...g, w: gw ? (gw[g.k]||0) : g.w}));
   let tot=list.reduce((a,g)=>a+g.w,0), r=Math.random()*tot, g=list[0];
   for (const it of list){ if((r-=it.w)<0){g=it;break;} }
   let k=g.k, pts=g.pts;
-  if (S.lives<3 && Math.random()<.07){ k='herz'; pts=0; }
+  if (kForce){ k=kForce; pts=FRIEND_PTS[k]; }
+  else if (S.lives<3 && Math.random()<.07){ k='herz'; pts=0; }
   else if (S.shield<=0 && Math.random()<.045){ k=SHIELDS[Math.floor(Math.random()*SHIELDS.length)]; pts=0; }
   const a = ASSETS[k], d = SIZE[k]*U, sc = d/Math.max(a[0],a[1]);
   const w=a[0]*sc, h=a[1]*sc, ground=!!GROUND[k];
@@ -645,6 +656,7 @@ function update(dt){
   if (lv.wall){ S.wallT-=dt; if (S.wallT<=0 && !ending){ spawnWall(); S.wallT=lv.wall; S.spawnT=Math.max(S.spawnT,1.1); } }
   if (S.banner){ S.banner.t-=dt; if (S.banner.t<=0) S.banner=null; }
   if (S.spawnT<=0 && !ending){ spawnBad(); S.spawnT = lv.gap*(.7+Math.random()*.6) * (1 - Math.min(.25,S.t/240)); }
+  if (S.friends.length && S.t >= S.friends[0].t && !(lv.home && S.homeOff!=null)) spawnGood(S.friends.shift().k);
   if (S.goodT<=0 && S.t < LEVEL_TIME-2 && !(lv.home && S.homeOff!=null)){ spawnGood(); S.goodT=.7+Math.random()*.8; }
 
   const vx=170*U*lv.speed;
