@@ -1,6 +1,14 @@
 # Oceans Reise
 
-*by Martin Kammler*
+> **Programmiert von Martin Kammler, Mitglied der DLRG.**
+>
+> Privat entstanden und der DLRG **kostenlos** zur Verfügung gestellt – zur freien
+> Verwendung in der **DLRG-Jugendarbeit und in der Ausbildung**, in allen Gliederungen,
+> ohne Lizenzgebühren.
+>
+> Programmcode, Idee und Grafiken stammen von Martin Kammler und stehen unter der
+> [MIT-Lizenz](LICENSE). Das Spiel ist ein privates Projekt und kein offizielles
+> Angebot der DLRG.
 
 Ein Ausweichspiel für Kinder (6–9 Jahre): Die kleine Schildkröte Ocean schwimmt durchs Meer nach Hause, sammelt Leckeres ein und weicht Müll und Hindernissen aus. Nach jedem Level wird eine Baderegel angezeigt, der Reihe nach alle elf.
 
@@ -87,6 +95,8 @@ Heimweg-Finale: Gegen Ende fährt der Zuhause-Boden mit dem Höhlenbogen (`img/z
 
 ## Lizenz und Credits
 
-Spiel, Idee und Grafiken: **Martin Kammler**. Veröffentlicht unter der [MIT-Lizenz](LICENSE).
+Spiel, Idee, Programmierung und Grafiken: **Martin Kammler**, Mitglied der DLRG.
+Veröffentlicht unter der [MIT-Lizenz](LICENSE) und ausdrücklich zur **kostenlosen
+Verwendung in der DLRG-Jugendarbeit und Ausbildung** freigegeben.
 
 Die Baderegeln-Texte stammen von Martin Kammler und werden wörtlich angezeigt.
