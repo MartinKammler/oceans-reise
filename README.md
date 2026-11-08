@@ -7,8 +7,9 @@
 > ohne Lizenzgebühren.
 >
 > Programmcode, Idee und Grafiken stammen von Martin Kammler und stehen unter der
-> [MIT-Lizenz](LICENSE). Das Spiel ist ein privates Projekt und kein offizielles
-> Angebot der DLRG.
+> [MIT-Lizenz](LICENSE). Die angezeigten **Baderegeln sind die Originaltexte der DLRG**
+> (© DLRG) und von der MIT-Lizenz ausgenommen. Das Spiel ist ein privates Projekt
+> und kein offizielles Angebot der DLRG.
 
 Ein Ausweichspiel für Kinder (6–9 Jahre): Die kleine Schildkröte Ocean schwimmt durchs Meer nach Hause, sammelt Leckeres ein und weicht Müll und Hindernissen aus. Nach jedem Level wird eine Baderegel angezeigt, der Reihe nach alle elf.
 
@@ -99,4 +100,6 @@ Spiel, Idee, Programmierung und Grafiken: **Martin Kammler**, Mitglied der DLRG.
 Veröffentlicht unter der [MIT-Lizenz](LICENSE) und ausdrücklich zur **kostenlosen
 Verwendung in der DLRG-Jugendarbeit und Ausbildung** freigegeben.
 
-Die Baderegeln-Texte stammen von Martin Kammler und werden wörtlich angezeigt.
+Die **Baderegeln** sind die offiziellen Originaltexte der DLRG (© DLRG) und werden
+wörtlich angezeigt. Sie stehen **nicht** unter der MIT-Lizenz; die Rechte daran liegen
+bei der DLRG.
