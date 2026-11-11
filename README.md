@@ -26,7 +26,7 @@ Läuft im Browser auf Tablet, Handy und PC, auch offline.
 - **Tastatur:** Pfeiltasten oder W/A/S/D.
 - Ocean bleibt immer im linken Teil des Bildschirms (etwa 70 % der Breite), damit genug Zeit zum Ausweichen bleibt.
 - **Pause:** Pause-Knopf oben rechts, Leertaste, Esc oder P. Im Pausenmenü: „Weiter“ oder „Zum Menü“.
-- **Ton:** Knopf oben rechts schaltet den Ton an und aus.
+- **Musik und Töne:** Zwei Knöpfe („Musik“, „Töne“) oben rechts im Spiel und unten im Startmenü schalten Musik und Geräusche getrennt an und aus. Die Einstellung bleibt gespeichert. Ton gibt es erst nach dem ersten Antippen (Vorgabe der Browser).
 
 Oben im Bild stehen Punkte, Leben (Herzen), der Levelname und ein Balken, der den Fortschritt im Level zeigt.
 
@@ -53,6 +53,25 @@ Nach der Installation läuft das Spiel im Vollbild und ohne Internet.
 ### Updates
 
 Die App sucht beim Öffnen und alle 30 Minuten nach einer neuen Version. Ist eine da, wird sie im Hintergrund geladen und aktiviert, sobald das Startmenü angezeigt wird. Ein laufendes Level wird nie unterbrochen. Die aktuelle Version steht unten im Startmenü.
+
+## Musik
+
+| Wo | Stück |
+|---|---|
+| Startmenü, Levelauswahl, Bestenliste | Titelsong „Ich geb nicht auf“: einmal der Refrain mit Gesang, danach nahtlos die Instrumental-Schleife des Refrains |
+| 1. Lagune | Lagunenleuchten |
+| 2. Seegraswiese | Seegraswogen |
+| 3. Korallenriff | Riffgewusel |
+| 4. Strömung | Unterströmung |
+| 5. Hafen | Hafenschatten |
+| 6. Geisternetze | Netzgespenster |
+| 7. Tiefsee | Tiefendruck |
+| 8. Müllstrudel | Plastikstrudel |
+| 9. Wilde See | Sturmsee |
+| 10. Heimweg | Heimwärts |
+| Ocean ist zu Hause | Schlussrefrain von „Ich geb nicht auf“ |
+
+In der Pause wird die Musik leiser. Die Levelstücke sind auf die ersten rund 80 Sekunden gekürzt (96 kbit/s), damit die Offline-App klein bleibt. Die Schleife des Titelsongs ist genau 16 Takte lang (103 BPM) und läuft über Web Audio lückenlos; die Taktwerte stehen in `index.html` (`GESANG_LEN`, `LOOP_LEN`).
 
 ## Spielablauf
 
@@ -88,6 +107,7 @@ Zehn Level à etwa 60 Sekunden. Jedes Level beginnt mit einem kurzen Hinweis; ge
 - `index.html` – das komplette Spiel (HTML, CSS, JavaScript in einer Datei)
 - `manifest.webmanifest`, `icons/` – App-Name, Icons und Darstellung für die Installation
 - `sw.js` – Service Worker: Offline-Cache und automatische Updates (wird erzeugt, nicht von Hand ändern)
+- `audio/` – Musik (Titel mit Gesang, Titel-Schleife, Finale, je ein Stück pro Level)
 - `img/` – aufbereitete Spielgrafiken (zugeschnitten, verkleinert, WebP/JPG/PNG)
 - `quellgrafiken/original/` – die Originalgrafiken in voller Größe
 - `quellgrafiken/rig.json` – Gelenkpunkte, mit denen Ocean aus Körper, Kopf und Flossen zusammengesetzt wird

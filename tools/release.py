@@ -19,7 +19,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PRECACHE_DIRS = ["img", "icons"]
+PRECACHE_DIRS = ["img", "icons", "audio"]
 PRECACHE_FILES = ["./", "index.html", "manifest.webmanifest"]
 
 

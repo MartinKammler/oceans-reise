@@ -1,5 +1,5 @@
 // Service Worker für Oceans Reise – wird von tools/release.py erzeugt, nicht von Hand ändern.
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE = 'oceans-reise-' + VERSION;
 const FONT_CACHE = 'oceans-reise-fonts';
 const FILES = [
@@ -110,7 +110,20 @@ const FILES = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
-  'icons/icon-maskable-512.png'
+  'icons/icon-maskable-512.png',
+  'audio/finale.mp3',
+  'audio/level01.mp3',
+  'audio/level02.mp3',
+  'audio/level03.mp3',
+  'audio/level04.mp3',
+  'audio/level05.mp3',
+  'audio/level06.mp3',
+  'audio/level07.mp3',
+  'audio/level08.mp3',
+  'audio/level09.mp3',
+  'audio/level10.mp3',
+  'audio/titel_gesang.mp3',
+  'audio/titel_schleife.mp3'
 ];
 
 // Neue Version: alle Dateien vorab laden. Aktiv wird sie erst, wenn die Seite

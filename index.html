@@ -104,6 +104,10 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .hs-list li.me{background:#fff1a8;outline:3px solid var(--sun)}
 .hs-list li.empty{opacity:.45;font-weight:500}
 @media (max-height:620px){ #menu .card > p:not(.small){display:none} #menu .card{gap:8px} }
+.snd.off{opacity:.45;text-decoration:line-through}
+.snd-row{display:flex;flex-wrap:wrap;gap:6px 8px;justify-content:center;align-items:center}
+.snd-row .credits{font-size:13px;opacity:.6;margin:0 !important}
+.snd-btn{font:inherit;font-weight:700;font-size:14px;color:var(--sea);background:#e3f4f7;border:2px solid #bfe3ea;border-radius:999px;padding:3px 14px;cursor:pointer}
 .credits{font-size:13px !important;opacity:.6;margin-top:-2px !important}
 .toast{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--paper);color:var(--ink);
   border-radius:999px;padding:8px 18px;font-weight:700;font-size:15px;box-shadow:0 4px 0 rgba(10,40,60,.3);white-space:nowrap;max-width:calc(100% - 32px);z-index:5}
@@ -120,7 +124,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <div class="pill" aria-label="Punkte">★ <span id="score">0</span></div>
       <div class="pill hearts" id="hearts" aria-label="Leben">♥♥♥</div>
       <div class="btn-row">
-        <button class="icon-btn" id="sound" aria-label="Ton an oder aus">Ton an</button>
+        <button class="icon-btn snd" data-snd="m" aria-label="Musik an oder aus">Musik</button>
+        <button class="icon-btn snd" data-snd="s" aria-label="Töne an oder aus">Töne</button>
         <button class="icon-btn" id="pause" aria-label="Pause">II</button>
       </div>
     </div>
@@ -147,7 +152,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
         <button class="play alt" id="btnRules">Baderegeln</button>
         <button class="play alt" id="btnScores">Bestenliste</button>
       </div>
-      <p class="credits">by Martin Kammler · <span id="appVersion"></span></p>
+      <div class="snd-row"><button class="snd-btn snd" data-snd="m">Musik</button><button class="snd-btn snd" data-snd="s">Töne</button><span class="credits">by Martin Kammler · <span id="appVersion"></span></span></div>
     </div>
   </div>
 
@@ -310,19 +315,117 @@ function resize(){
 }
 addEventListener('resize', resize); resize();
 
-// ---------- Ton ----------
-let audio=null, soundOn=true;
+// ---------- Ton und Musik ----------
+// Alles läuft über Web Audio: ein Kanal für Musik, einer für Effekte. Browser erlauben Ton erst nach dem ersten Antippen.
+let musicOn = true, sfxOn = true;
+try { const p = JSON.parse(localStorage.getItem('ocean-audio')); if (p){ musicOn = p.m !== false; sfxOn = p.s !== false; } } catch(e){}
+let audio = null, musicBus = null, sfxBus = null, audioUnlocked = false;
+const MUSIC_VOL = .55;
+function ctxAudio(){
+  if (!audio){
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+    musicBus = audio.createGain(); sfxBus = audio.createGain();
+    musicBus.gain.value = musicOn ? MUSIC_VOL : 0; sfxBus.gain.value = sfxOn ? 1 : 0;
+    musicBus.connect(audio.destination); sfxBus.connect(audio.destination);
+  }
+  return audio;
+}
 function beep(f,d=.12,type='sine',vol=.14,slide=0){
-  if(!soundOn) return;
+  if (!sfxOn || !audioUnlocked) return;
   try{
-    audio = audio || new (window.AudioContext||window.webkitAudioContext)();
-    const o=audio.createOscillator(), g=audio.createGain(), t=audio.currentTime;
+    const a=ctxAudio(), o=a.createOscillator(), g=a.createGain(), t=a.currentTime;
     o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(f*slide,t+d);
     g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+d);
-    o.connect(g).connect(audio.destination); o.start(t); o.stop(t+d);
+    o.connect(g).connect(sfxBus); o.start(t); o.stop(t+d);
   }catch(e){}
 }
-$('sound').onclick = () => { soundOn=!soundOn; $('sound').textContent = soundOn ? 'Ton an' : 'Ton aus'; };
+
+// Musikstücke: Titel „Ich geb nicht auf“ (Refrain mit Gesang, danach Instrumental-Schleife), Finale, ein Stück je Level
+const MUSIC = {titel_gesang:'audio/titel_gesang.mp3', titel_schleife:'audio/titel_schleife.mp3', finale:'audio/finale.mp3'};
+for (let i = 1; i <= 10; i++){ const k = 'level' + String(i).padStart(2,'0'); MUSIC[k] = 'audio/' + k + '.mp3'; }
+// Taktgenaue Werte aus dem Song (103 BPM): Gesang ab 56,0 s bis 92,325 s; Schleife = 16 Takte ab 55,589 s, Datei mit 0,5 s Rand
+const GESANG_LEN = 92.325 - 56.0, LOOP_LEN = 36.736, LOOP_PAD = .5;
+const bufCache = {};
+function loadBuf(k){
+  if (!bufCache[k]) bufCache[k] = fetch(MUSIC[k]).then(r => r.arrayBuffer())
+    .then(b => new Promise((res, rej) => ctxAudio().decodeAudioData(b, res, rej)))
+    .catch(e => { delete bufCache[k]; throw e; });
+  return bufCache[k];
+}
+let track = null, wantTrack = null, titleSung = false;
+function fadeOutTrack(tr, d){
+  tr.dead = true; if (!tr.gain) return;
+  const t = audio.currentTime;
+  tr.gain.gain.cancelScheduledValues(t); tr.gain.gain.setValueAtTime(tr.gain.gain.value, t); tr.gain.gain.linearRampToValueAtTime(0, t + d);
+  for (const s of tr.srcs){ try { s.stop(t + d + .05); } catch(e){} }
+}
+function setMusic(name){
+  wantTrack = name;
+  if (!audioUnlocked || (track && track.name === name && !track.dead)) return;
+  if (track) fadeOutTrack(track, .8);
+  track = null;
+  if (!name) return;
+  const tr = {name, srcs: [], gain: null}; track = tr;
+  const sing = name === 'titel' && !titleSung;
+  const keys = name === 'titel' ? (sing ? ['titel_gesang','titel_schleife'] : ['titel_schleife']) : [name];
+  Promise.all(keys.map(loadBuf)).then(bufs => {
+    if (track !== tr || tr.dead) return;
+    const a = ctxAudio(), g = a.createGain(); g.connect(musicBus); tr.gain = g;
+    const t0 = a.currentTime + .05;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(1, t0 + (sing ? .03 : 1));
+    const src = (b, loop, dest = g) => { const s = a.createBufferSource(); s.buffer = b; s.loop = loop; s.connect(dest); tr.srcs.push(s); return s; };
+    if (name === 'titel'){
+      const loopBuf = bufs[bufs.length - 1];
+      const lg = a.createGain(); lg.connect(g);
+      const l = src(loopBuf, true, lg); l.loopStart = LOOP_PAD; l.loopEnd = LOOP_PAD + LOOP_LEN;
+      if (sing){
+        titleSung = true;
+        // Gesang einmal, dann genau an der Taktgrenze in die Instrumental-Schleife (gleiche Stelle im Song)
+        const vg = a.createGain(); vg.connect(g);
+        const v = src(bufs[0], false, vg), tEnd = t0 + GESANG_LEN;
+        v.start(t0); vg.gain.setValueAtTime(1, tEnd - .015); vg.gain.linearRampToValueAtTime(0, tEnd); v.stop(tEnd + .05);
+        lg.gain.setValueAtTime(0, tEnd - .015); lg.gain.linearRampToValueAtTime(1, tEnd);
+        l.start(tEnd - .015, LOOP_PAD - .015);
+      } else l.start(t0, LOOP_PAD);
+    } else if (name === 'finale'){
+      const f = src(bufs[0], false); f.start(t0);
+      f.onended = () => { if (track === tr && !tr.dead){ track = null; setMusic('titel'); } };
+    } else src(bufs[0], true).start(t0);
+  }).catch(() => {});
+}
+function musicLevel(){
+  if (!musicBus) return;
+  const t = audio.currentTime, v = musicOn ? (S.mode === 'pause' ? MUSIC_VOL * .3 : MUSIC_VOL) : 0;
+  musicBus.gain.cancelScheduledValues(t); musicBus.gain.setValueAtTime(musicBus.gain.value, t); musicBus.gain.linearRampToValueAtTime(v, t + .3);
+}
+function renderSnd(){
+  document.querySelectorAll('.snd').forEach(b => {
+    const on = b.dataset.snd === 'm' ? musicOn : sfxOn;
+    b.classList.toggle('off', !on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.title = (b.dataset.snd === 'm' ? 'Musik ' : 'Töne ') + (on ? 'an' : 'aus');
+  });
+}
+document.querySelectorAll('.snd').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.snd === 'm') musicOn = !musicOn; else sfxOn = !sfxOn;
+  try { localStorage.setItem('ocean-audio', JSON.stringify({m: musicOn, s: sfxOn})); } catch(e){}
+  if (sfxBus) sfxBus.gain.value = sfxOn ? 1 : 0;
+  musicLevel(); renderSnd();
+}));
+renderSnd();
+function unlockAudio(){
+  try {
+    const a = ctxAudio();
+    if (a.state === 'suspended') a.resume();
+    if (!audioUnlocked){ audioUnlocked = true; setMusic(wantTrack); }
+  } catch(e){}
+}
+addEventListener('pointerdown', unlockAudio, true);
+addEventListener('keydown', unlockAudio, true);
+document.addEventListener('visibilitychange', () => {
+  if (!audio) return;
+  if (document.hidden) audio.suspend(); else if (audioUnlocked) audio.resume();
+});
 
 // ---------- Ocean (aus Martins Grafiken zusammengesetzt) ----------
 const RIG = {"body": {"w": 498, "h": 322, "px": -49.2, "py": -46.0}, "head_happy": {"w": 275, "h": 218, "px": 19.6, "py": 156.0}, "head_surprised": {"w": 269, "h": 229, "px": 17.9, "py": 164.2}, "head_worried": {"w": 264, "h": 224, "px": 15.9, "py": 157.5}, "head_determined": {"w": 265, "h": 208, "px": 15.6, "py": 151.5}, "flip_front": {"w": 259, "h": 144, "px": 27.8, "py": 63.0}, "flip_front_far": {"w": 259, "h": 144, "px": 27.8, "py": 63.0}, "flip_back": {"w": 192, "h": 150, "px": 173.5, "py": 15.8}, "flip_back_far": {"w": 192, "h": 150, "px": 173.5, "py": 15.8}, "wave": {"w": 478, "h": 280, "px": -18.9, "py": -52.5}, "_anchors": {"K": 0.4, "head": [496.0, 192.0], "ff": [394.0, 286.0], "ff_far": [360.0, 272.0], "bf": [144.0, 308.0], "bf_far": [172.0, 296.0], "center": [288.0, 224.0]}};
@@ -410,7 +513,13 @@ for (let i=0;i<26;i++) S.streaks.push({x:Math.random(), y:Math.random(), l:.5+Ma
 for (let i=0;i<7;i++) S.blasen.push({x:Math.random(), y:Math.random(), s:.5+Math.random()*.7, v:.025+Math.random()*.03, k:Math.random()<.5?'blasen1':'blasen2', p:Math.random()*6});
 
 const OVERLAYS = ['menu','levelSel','rulesBox','done','fail','paused','scores'];
-function show(id){ for (const o of OVERLAYS) $(o).hidden = o !== id; $('hud').hidden = !(id===null || id==='paused'); }
+function show(id){
+  for (const o of OVERLAYS) $(o).hidden = o !== id; $('hud').hidden = !(id===null || id==='paused');
+  if (id === null) setMusic('level' + String(S.lvl + 1).padStart(2,'0'));
+  else if (id === 'done') setMusic(S.lvl === LEVELS.length - 1 ? 'finale' : 'titel');
+  else if (id !== 'paused') setMusic('titel');
+  musicLevel();
+}
 
 function startLevel(i){
   S.lvl=i; S.t=0; S.score=0; S.lives=3; S.inv=0; S.shield=0; S.spawnT=1.2; S.goodT=.4; S.objs=[]; S.fx=[];
@@ -860,7 +969,7 @@ function loop(now){
 show('menu');
 
 // ---------- Version und automatisches Update (PWA) ----------
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 $('appVersion').textContent = 'Version ' + APP_VERSION;
 function toast(msg, ms = 3500){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, ms); }
 try { if (sessionStorage.getItem('ocean-updated')) { sessionStorage.removeItem('ocean-updated'); toast('Aktualisiert auf Version ' + APP_VERSION); } } catch(e){}
